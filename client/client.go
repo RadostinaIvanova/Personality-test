@@ -4,13 +4,14 @@ import(
 	"bufio"
 	"net"
 	"os"
+	"log"
 	
 )
 
 func main(){
 	conn,err := net.Dial("tcp", "localhost:9000")
 	if err != nil{
-		panic(err)
+		log.Fatal(err)
 	}
 	defer conn.Close()
 	fmt.Println("Server accessed")
@@ -20,7 +21,7 @@ func main(){
 	for{
 	messageReceived, err:= clientReader.ReadString('\n')
 	if err != nil{
-		fmt.Println("Client couldn't receive a message")
+		fmt.Println(err)
 	}
 	fmt.Println(messageReceived)
 
