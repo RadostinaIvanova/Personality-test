@@ -49,7 +49,7 @@ func classDocsNum(classDocs []string) int{
 }
 
 //returns a slice of number of documents in each class
-func makeArrayOfNumDocsInClass(classes map[int] []string) []int{
+func makeSliceOfNumDocsInClass(classes map[int] []string) []int{
 	arrOfNumDocs := []int{}
 	for key,docs := range classes{
 		arrOfNumDocs[key] = classDocsNum(docs)
@@ -59,9 +59,9 @@ func makeArrayOfNumDocsInClass(classes map[int] []string) []int{
 
 //returns slice of probabilties of each class with the formula - 
 //count of documents in class divided by all documents in all classes
-func makeArrPriorC(numOfAllDocs int, arrNumDocsInClass []int) []float64{
+func makeSlicePriorC(numOfAllDocs int, makeSliceOfNumDocsInClass []int) []float64{
 	arr := []float64{}
-	for i ,docsCount := range arrNumDocsInClass {
+	for i ,docsCount := range makeSliceOfNumDocsInClass {
 		arr[i] = float64(docsCount)/ float64(numOfAllDocs)
 	}
 	return arr
@@ -69,7 +69,7 @@ func makeArrPriorC(numOfAllDocs int, arrNumDocsInClass []int) []float64{
 
 //returns a slice which each index matches the term in vocabulary of the same index 
 // and its value is the number of counts of the term in all documents 
-func makeArrTermCountInClass(numOfClasses int,vocabulary map [string] []int) []int{
+func makeSliceTermCountInClass(numOfClasses int,vocabulary map [string] []int) []int{
 	termCountArr := []int{}
 	for _, value := range vocabulary{
 		for i:=0;i <= numOfClasses; i++ {
@@ -83,17 +83,17 @@ func makeArrTermCountInClass(numOfClasses int,vocabulary map [string] []int) []i
 //and returns map with key string and value slice of floats
 //the keys represent a term from vocabulary and the slice of floats has the values of the cond probability 
 //inside the innermost cycle is the the making of the slice which we assign to the every term of the vocabulary
-func makeArrCondProb(vocabulary map [string] []int, arrNumOfTermClass []int) map [string] []float64{
-	arrCondProb := map [string] []float64{}
+func makeSliceCondProb(vocabulary map [string] []int, sliceNumOfTermClass []int) map [string] []float64{
+	sliceCondProb := map [string] []float64{}
 	temp := [] float64{}
 	sizeV := len(vocabulary)
 	for term, _ := range vocabulary{
-		for class,numOfTermInClass := range arrNumOfTermClass{
+		for class,numOfTermInClass := range sliceNumOfTermClass{
 			temp[class] = float64(term[class] + 1)/float64(numOfTermInClass + sizeV)
 		}
-		arrCondProb[term] = temp
+		sliceCondProb[term] = temp
 	}
-	return arrCondProb
+	return sliceCondProb
 }
 
 //returns vocabulary of type map[string] []int where the key is a term 
@@ -121,11 +121,11 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
 	numOfAllDocs := calNumAllDocs(classes)
 	numOfClasses := calNumOfClasses(classes)
 	vocabulary := makeVocabulary(classes,numOfClasses)
-	arrNumDocsInClass := makeArrayOfNumDocsInClass(classes)
-	arrPriorC := makeArrPriorC(numOfAllDocs, arrNumDocsInClass)
-	arrTermCountClass := makeArrTermCountInClass(numOfClasses, vocabulary)
-	arrCondProb := makeArrCondProb(vocabulary,arrTermCountClass)
-	return vocabulary, arrCondProb, arrPriorC
+	makeSliceOfNumDocsInClass := makeSliceOfNumDocsInClass(classes)
+	slicePriorC := makeSlicePriorC(numOfAllDocs, makeSliceOfNumDocsInClass)
+	sliceTermCountClass := makeSliceTermCountInClass(numOfClasses, vocabulary)
+	sliceCondProb := makeSliceCondProb(vocabulary,sliceTermCountClass)
+	return vocabulary, sliceCondProb, slicePriorC
 }
 func main(){
 	
