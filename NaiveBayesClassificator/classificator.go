@@ -7,23 +7,6 @@ func extractVocabulary(document []string){
 
 }
 
-//func countDocument()
-
-//Each class has its own file 
-// class [0] [[document1],[document2]] vector<STRING> 
-// class [0] [document2]
-// vector<string> = class["key"]
-
-
-// etc
-//class[1][document3]
-//var map with classes and documents map[string]int
-// classes := map[int][]string{
-// 	0 : {"lajdjadiadiw jbbj", "jajidad"},
-// 	1 : {"laino", "zadnik"},
-// }
-//fmt.Println(calNumDocsOfClasses(classes))
-
 //returns number of all docs in all classes
 func calNumAllDocs(classes map[int] []string) int{
 	numOfDocs := 0
