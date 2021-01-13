@@ -1,7 +1,6 @@
 package main
 
 import (
-	 "fmt"
 	 "strings"
 )
 func extractVocabulary(document []string){
@@ -70,14 +69,28 @@ func makeArrTermCountInClass(numOfClasses int,vocabulary map [string] []int) []i
 	}
 	return termCountArr
 }
-func TrainMultinomialNB(classes map[int] []string, document []string, vocabulary map [string] []int){
+
+func makeArrCondProb(vocabulary map [string] []int, arrNumOfTermClass []int) map [string] []float64{
+	arrCondProb := map [string] []float64{}
+	temp := [] float64{}
+	sizeV := len(vocabulary)
+	for term, _ := range vocabulary{
+		for class,numOfTermInClass := range arrNumOfTermClass{
+			temp[class] = float64(term[class] + 1)/float64(numOfTermInClass + sizeV)
+		}
+		arrCondProb[term] = temp
+	}
+	return arrCondProb
+}
+func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [string] []float64, []float64 ){
 	numOfAllDocs := calNumAllDocs(classes)
 	numOfClasses := calNumOfClasses(classes)
+	vocabulary := map [string] []int{}
 	for class, docs := range classes{
 		for _, doc := range docs{
 			terms := extractTerms(doc)
 			for _, term := range terms{
-				if val, ok := vocabulary[term]; !ok {
+				if _, ok := vocabulary[term]; !ok {
 					for i := 0; i <= numOfClasses; i++{
 						vocabulary[term][i] = 0
 					}
@@ -90,7 +103,8 @@ func TrainMultinomialNB(classes map[int] []string, document []string, vocabulary
 	arrNumDocsInClass := makeArrayOfNumDocsInClass(classes)
 	arrPriorC := makeArrPriorC(numOfAllDocs, arrNumDocsInClass)
 	arrTermCountClass := makeArrTermCountInClass(numOfClasses, vocabulary)
-	ararCondProb := 
+	arrCondProb := makeArrCondProb(vocabulary,arrTermCountClass)
+	return vocabulary, arrCondProb, arrPriorC
 }
 func main(){
 	
