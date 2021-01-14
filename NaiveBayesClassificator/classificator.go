@@ -3,6 +3,7 @@ package main
 import (
 	 "strings"
 	 "math"
+	 "fmt"
 )
 func extractVocabulary(document []string){}
 
@@ -106,7 +107,7 @@ func makeVocabulary(classes map[int] []string, numOfClasses int) map [string] []
 			}
 		}
 	}
-	
+
 	return vocabulary
 }
 //function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
@@ -143,6 +144,9 @@ func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text 
 
 	return classificatedAs
 }
+
+//returns the confusion matrix which shows classification
+// accuracy by showing the correct and incorrect predictions on each class.
 func makeConfMatrix(testClassCorpus map[int] []string,
 				    numOfClasses int,
 					vocabulary map [string] []int,
@@ -160,6 +164,7 @@ func makeConfMatrix(testClassCorpus map[int] []string,
 	return confusionMatrix
 }
 
+//returns sum of the elements of the matrix
 func sumMatrixValues(confusionMatrix [][]int) int{
 	var sum int
 	for _, col := range confusionMatrix{
@@ -170,6 +175,7 @@ func sumMatrixValues(confusionMatrix [][]int) int{
 	return sum
 }
 
+//sum the values of slice of ints 
 func sum(sl []int) int {  
 	result := 0  
 	for _, numb := range sl {  
@@ -178,7 +184,16 @@ func sum(sl []int) int {
 	return result  
 }  
 
-func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocs []int) ([]float64, []float64,[] float64){
+func numberDocByClass(testClassCorpus map[int] []string) []int{
+	docsCountByClass := []int{}
+	for classInd, docs := range testClassCorpus{
+		docsCountByClass[classInd] = len(docs)
+	}
+	return docsCountByClass
+}
+
+//returns the Precision, F-score and the recall of the classificator for each document of a test set of documents
+func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){
 
 	countDocsExtracted := sumMatrixValues(confusionMatrix)
 	precision := []float64{}
@@ -192,7 +207,7 @@ func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocs []int) ([]flo
 			 fScore = append(precision, 0.0)
 		}else{
 		precision = append(precision, (float64(confusionMatrix[classInd][classInd]) / float64(countDocsExtracted)))
-		recall    = append(recall,    (float64(confusionMatrix[classInd][classInd]) / float64(numAllDocs[classInd])))
+		recall    = append(recall,    (float64(confusionMatrix[classInd][classInd]) / float64(numAllDocsByClass[classInd])))
 		fScore    = append(fScore,    ((2.0 * precision[classInd] * recall[classInd]) / (precision[classInd] + recall[classInd])))
 		}
 	}
@@ -200,8 +215,9 @@ func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocs []int) ([]flo
 	return precision, recall, fScore
 }
 
+//returns overall Precision, Recall and F-score for every class 
 func calcOverall(precision []float64,recall  []float64, fScore []float64, 
-				numOfClasses int, countDocsExtracted int, countDocsClass[] int) (float64, float64, float64){
+				 numOfClasses int , countDocsClass[] int) (float64, float64, float64){
 
 	var precisionOverall float64 = 0.0
 	var recallOverall float64 = 0.0
@@ -216,15 +232,24 @@ func calcOverall(precision []float64,recall  []float64, fScore []float64,
 	fScoreOverall += (2 * precisionOverall * recallOverall) / (precisionOverall + recallOverall)
 	return precisionOverall, recallOverall, fScoreOverall
 }
+
+//testing classifier accuracy
 func testClassifier(testClassCorpus map[int] []string,
 					vocabulary map [string] []int,
 					sliceCondProb map [string] []float64, 
 					slicePriorC []float64 ){
-
-//	numOfClasses := len(testClassCorpus)
-	//confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
+	numOfClasses := len(testClassCorpus)
+	numDocsByClass := numberDocByClass(testClassCorpus)
+	confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
+	precision, recall, fScore := calcPRF(confusionMatrix, numOfClasses, numDocsByClass)
+	precisionOverall, recallOverall,fScoreOverall := calcOverall(precision, recall, fScore, numOfClasses, numDocsByClass)
+	fmt.Println("Прецизност: ", precision)
+	fmt.Println("Обхват: ", recall)
+	fmt.Println("F-score: ", fScore)
+	fmt.Println("Обща прецизност: ", precisionOverall)
+	fmt.Println("Общ Обхват: ", recallOverall)
+	fmt.Println("Обща F-score: ", fScoreOverall)
 					}
-
 func main(){
 	
 }
