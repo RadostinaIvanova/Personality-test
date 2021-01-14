@@ -2,10 +2,11 @@ package main
 
 import (
 	 "strings"
+	 "math"
 )
-func extractVocabulary(document []string){
+func extractVocabulary(document []string){}
 
-}
+func convertText(document []string){}
 
 //returns number of all docs in all classes
 func calNumAllDocs(classes map[int] []string) int{
@@ -109,6 +110,26 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
 	sliceTermCountClass := makeSliceTermCountInClass(numOfClasses, vocabulary)
 	sliceCondProb := makeSliceCondProb(vocabulary,sliceTermCountClass)
 	return vocabulary, sliceCondProb, slicePriorC
+}
+
+//returns the class corresponding to the text given by using formula 	
+func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
+	terms  := extractTerms(text)
+	var classificatedAs int 
+	var maxScore float64
+	for classInd, value := range priorC{
+		score := math.Log(value)
+		for _, term := range terms{
+			if condProbTerm, ok := condProb[term]; ok {
+				score += math.Log(condProbTerm[classInd])
+			}
+		}
+		if classInd == 0 || score > maxScore{
+			maxScore = score
+			classificatedAs = classInd
+		}
+	}
+	return classificatedAs
 }
 func main(){
 	
