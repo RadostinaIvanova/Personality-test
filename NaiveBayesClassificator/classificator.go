@@ -45,9 +45,11 @@ func makeSliceOfNumDocsInClass(classes map[int] []string) []int{
 //count of documents in class divided by all documents in all classes
 func makeSlicePriorC(numOfAllDocs int, makeSliceOfNumDocsInClass []int) []float64{
 	arr := []float64{}
+
 	for i ,docsCount := range makeSliceOfNumDocsInClass {
 		arr[i] = float64(docsCount)/ float64(numOfAllDocs)
 	}
+
 	return arr
 }
 
@@ -55,11 +57,13 @@ func makeSlicePriorC(numOfAllDocs int, makeSliceOfNumDocsInClass []int) []float6
 // and its value is the number of counts of the term in all documents 
 func makeSliceTermCountInClass(numOfClasses int,vocabulary map [string] []int) []int{
 	termCountArr := []int{}
+
 	for _, value := range vocabulary{
 		for i:=0;i <= numOfClasses; i++ {
 			termCountArr[i] = value[i]
 		}
 	}
+
 	return termCountArr
 }
 
@@ -71,19 +75,23 @@ func makeSliceCondProb(vocabulary map [string] []int, sliceNumOfTermClass []int)
 	sliceCondProb := map [string] []float64{}
 	temp := [] float64{}
 	sizeV := len(vocabulary)
+
 	for term, _ := range vocabulary{
 		for class,numOfTermInClass := range sliceNumOfTermClass{
 			temp[class] = float64(term[class] + 1)/float64(numOfTermInClass + sizeV)
 		}
 		sliceCondProb[term] = temp
 	}
+
 	return sliceCondProb
 }
 
 //returns vocabulary of type map[string] []int where the key is a term 
 //and the slice contains for each class the term frequency
 func makeVocabulary(classes map[int] []string, numOfClasses int) map [string] []int{
+	
 	vocabulary := map [string] []int{}
+
 	for class, docs := range classes{
 		for _, doc := range docs{
 			terms := extractTerms(doc)
@@ -98,6 +106,7 @@ func makeVocabulary(classes map[int] []string, numOfClasses int) map [string] []
 			}
 		}
 	}
+	
 	return vocabulary
 }
 //function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
@@ -114,9 +123,11 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
 
 //returns the class corresponding to the text given by using formula 	
 func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
+	
 	terms  := extractTerms(text)
 	var classificatedAs int 
 	var maxScore float64
+
 	for classInd, value := range priorC{
 		score := math.Log(value)
 		for _, term := range terms{
@@ -129,8 +140,91 @@ func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text 
 			classificatedAs = classInd
 		}
 	}
+
 	return classificatedAs
 }
+func makeConfMatrix(testClassCorpus map[int] []string,
+				    numOfClasses int,
+					vocabulary map [string] []int,
+					sliceCondProb map [string] []float64, 
+					slicePriorC []float64 ) [][]int{
+
+	confusionMatrix := [][]int{}
+	for classInd := 0; classInd <= numOfClasses;classInd++{
+		for _, doc := range testClassCorpus[classInd]{
+			classified_as_doc := applyMultinomialNB(sliceCondProb, slicePriorC,doc)
+			confusionMatrix[classInd][classified_as_doc] += 1
+		}
+	}
+
+	return confusionMatrix
+}
+
+func sumMatrixValues(confusionMatrix [][]int) int{
+	var sum int
+	for _, col := range confusionMatrix{
+		for _, value := range col{
+			sum+= value
+		}
+	}
+	return sum
+}
+
+func sum(sl []int) int {  
+	result := 0  
+	for _, numb := range sl {  
+	 result += numb  
+	}  
+	return result  
+}  
+
+func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocs []int) ([]float64, []float64,[] float64){
+
+	countDocsExtracted := sumMatrixValues(confusionMatrix)
+	precision := []float64{}
+	recall := []float64{}
+	fScore := []float64{}
+
+	for classInd := 0; classInd <= numOfClasses; classInd++{
+		if confusionMatrix[classInd][classInd] == 0{
+			 precision = append(precision, 0.0)
+			 recall = append(precision, 0.0)
+			 fScore = append(precision, 0.0)
+		}else{
+		precision = append(precision, (float64(confusionMatrix[classInd][classInd]) / float64(countDocsExtracted)))
+		recall    = append(recall,    (float64(confusionMatrix[classInd][classInd]) / float64(numAllDocs[classInd])))
+		fScore    = append(fScore,    ((2.0 * precision[classInd] * recall[classInd]) / (precision[classInd] + recall[classInd])))
+		}
+	}
+	
+	return precision, recall, fScore
+}
+
+func calcOverall(precision []float64,recall  []float64, fScore []float64, 
+				numOfClasses int, countDocsExtracted int, countDocsClass[] int) (float64, float64, float64){
+
+	var precisionOverall float64 = 0.0
+	var recallOverall float64 = 0.0
+	var fScoreOverall float64 = 0.0
+	allDocs := sum(countDocsClass)
+
+	for classInd := 0; classInd <= numOfClasses; classInd++{
+		precisionOverall += (float64(precision[classInd] * precision[classInd])/ float64(allDocs))
+    	recallOverall    += (float64(countDocsClass[classInd]) * recall[classInd]) / float64(allDocs)
+	}
+
+	fScoreOverall += (2 * precisionOverall * recallOverall) / (precisionOverall + recallOverall)
+	return precisionOverall, recallOverall, fScoreOverall
+}
+func testClassifier(testClassCorpus map[int] []string,
+					vocabulary map [string] []int,
+					sliceCondProb map [string] []float64, 
+					slicePriorC []float64 ){
+
+//	numOfClasses := len(testClassCorpus)
+	//confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
+					}
+
 func main(){
 	
 }
