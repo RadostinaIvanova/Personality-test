@@ -5,10 +5,62 @@ import (
 	 "math"
 	 "fmt"
 )
+
+
 func extractVocabulary(document []string){}
 
 func convertText(document []string){}
 
+
+//function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
+func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [string] []float64, []float64 ){
+	numOfAllDocs := calNumAllDocs(classes)
+	numOfClasses := calNumOfClasses(classes)
+	vocabulary := makeVocabulary(classes,numOfClasses)
+	makeSliceOfNumDocsInClass := makeSliceOfNumDocsInClass(classes)
+	slicePriorC := makeSlicePriorC(numOfAllDocs, makeSliceOfNumDocsInClass)
+	sliceTermCountClass := makeSliceTermCountInClass(numOfClasses, vocabulary)
+	sliceCondProb := makeSliceCondProb(vocabulary,sliceTermCountClass)
+	return vocabulary, sliceCondProb, slicePriorC
+}
+
+//returns the class corresponding to the text given by using formula 	
+func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
+	
+	terms  := extractTerms(text)
+	var classificatedAs int 
+	var maxScore float64
+
+	for classInd, value := range priorC{
+		score := math.Log(value)
+		for _, term := range terms{
+			if condProbTerm, ok := condProb[term]; ok {
+				score += math.Log(condProbTerm[classInd])
+			}
+		}
+		if classInd == 0 || score > maxScore{
+			maxScore = score
+			classificatedAs = classInd
+		}
+	}
+
+	return classificatedAs
+}
+
+//testing classifier accuracy
+func testClassifier(testClassCorpus map[int] []string, vocabulary map [string] []int, sliceCondProb map [string] []float64, slicePriorC []float64 ){
+	numOfClasses := len(testClassCorpus)
+	numDocsByClass := numberDocByClass(testClassCorpus)
+	confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
+	precision, recall, fScore := calcPRF(confusionMatrix, numOfClasses, numDocsByClass)
+	precisionOverall, recallOverall,fScoreOverall := calcOverall(precision, recall, fScore, numOfClasses, numDocsByClass)
+	fmt.Println("Прецизност: ", precision)
+	fmt.Println("Обхват: ", recall)
+	fmt.Println("F-score: ", fScore)
+	fmt.Println("Обща прецизност: ", precisionOverall)
+	fmt.Println("Общ Обхват: ", recallOverall)
+		fmt.Println("Обща F-score: ", fScoreOverall)
+}
 //returns number of all docs in all classes
 func calNumAllDocs(classes map[int] []string) int{
 	numOfDocs := 0
@@ -110,40 +162,7 @@ func makeVocabulary(classes map[int] []string, numOfClasses int) map [string] []
 
 	return vocabulary
 }
-//function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
-func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [string] []float64, []float64 ){
-	numOfAllDocs := calNumAllDocs(classes)
-	numOfClasses := calNumOfClasses(classes)
-	vocabulary := makeVocabulary(classes,numOfClasses)
-	makeSliceOfNumDocsInClass := makeSliceOfNumDocsInClass(classes)
-	slicePriorC := makeSlicePriorC(numOfAllDocs, makeSliceOfNumDocsInClass)
-	sliceTermCountClass := makeSliceTermCountInClass(numOfClasses, vocabulary)
-	sliceCondProb := makeSliceCondProb(vocabulary,sliceTermCountClass)
-	return vocabulary, sliceCondProb, slicePriorC
-}
 
-//returns the class corresponding to the text given by using formula 	
-func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
-	
-	terms  := extractTerms(text)
-	var classificatedAs int 
-	var maxScore float64
-
-	for classInd, value := range priorC{
-		score := math.Log(value)
-		for _, term := range terms{
-			if condProbTerm, ok := condProb[term]; ok {
-				score += math.Log(condProbTerm[classInd])
-			}
-		}
-		if classInd == 0 || score > maxScore{
-			maxScore = score
-			classificatedAs = classInd
-		}
-	}
-
-	return classificatedAs
-}
 
 //returns the confusion matrix which shows classification
 // accuracy by showing the correct and incorrect predictions on each class.
@@ -233,23 +252,7 @@ func calcOverall(precision []float64,recall  []float64, fScore []float64,
 	return precisionOverall, recallOverall, fScoreOverall
 }
 
-//testing classifier accuracy
-func testClassifier(testClassCorpus map[int] []string,
-					vocabulary map [string] []int,
-					sliceCondProb map [string] []float64, 
-					slicePriorC []float64 ){
-	numOfClasses := len(testClassCorpus)
-	numDocsByClass := numberDocByClass(testClassCorpus)
-	confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
-	precision, recall, fScore := calcPRF(confusionMatrix, numOfClasses, numDocsByClass)
-	precisionOverall, recallOverall,fScoreOverall := calcOverall(precision, recall, fScore, numOfClasses, numDocsByClass)
-	fmt.Println("Прецизност: ", precision)
-	fmt.Println("Обхват: ", recall)
-	fmt.Println("F-score: ", fScore)
-	fmt.Println("Обща прецизност: ", precisionOverall)
-	fmt.Println("Общ Обхват: ", recallOverall)
-	fmt.Println("Обща F-score: ", fScoreOverall)
-					}
+
 func main(){
 	
 }
