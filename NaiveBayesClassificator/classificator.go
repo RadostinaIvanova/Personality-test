@@ -177,7 +177,6 @@ func makeSliceOfNumDocsInClass(classes map[int] []string, numOfClasses int) []in
 			confusionMatrix[classInd][classified_as_doc] += 1
 			}
 		}
-	 fmt.Println(confusionMatrix)
 	return confusionMatrix
  }
  
