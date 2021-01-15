@@ -6,9 +6,6 @@ import (
 	 "fmt"
 )
 
-
-func convertText(document []string){}
-
 //function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
 func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [string] []float64, []float64 ){
 	numOfAllDocs := calNumAllDocs(classes)
@@ -56,30 +53,7 @@ func testClassifier(testClassCorpus map[int] []string, vocabulary map [string] [
 	fmt.Println("F-score: ", fScore)
 	fmt.Println("Обща прецизност: ", precisionOverall)
 	fmt.Println("Общ Обхват: ", recallOverall)
-		fmt.Println("Обща F-score: ", fScoreOverall)
-}
-//returns number of all docs in all classes
-func calNumAllDocs(classes map[int] []string) int{
-	numOfDocs := 0
-	for _,value := range classes{
-		numOfDocs += len(value)
-	}
-	return numOfDocs
-}
-
-//returns number of classes 
-func calNumOfClasses(classes map[int] []string) int{
-	return len(classes)
-}
-
-//returns a slice of strings by spliting a given document into terms
-func extractTerms(doc string) []string{
-	return strings.Fields(doc)
-}
-
-//returns number of documents in each class
-func classDocsNum(classDocs []string) int{
-	return len(classDocs)
+	fmt.Println("Обща F-score: ", fScoreOverall)
 }
 
 //returns a slice of number of documents in each class
@@ -101,25 +75,8 @@ func makeSliceOfNumDocsInClass(classes map[int] []string, numOfClasses int) []in
 	}
 	return arr
  }
- 
- //returns a slice which each index matches the term in vocabulary of the same index 
- // and its value is the number of counts of the term in all documents 
- func makeSliceTermCountInClass(numOfClasses int,vocabulary map [string] []int) []int{
-	termCountArr := []int{}
-	for _, value := range vocabulary{
-		for classInd:=0;classInd < numOfClasses; classInd++ {
-			if len(termCountArr) >= numOfClasses{
-				 termCountArr[classInd] += value[classInd] 
-			}else{
-				termCountArr = append(termCountArr,value[classInd])
-			}
-		}
-	}
- 
-	return termCountArr
- }
- 
- //the function receives as arguments a vocabulary and a slice with number of terms in each class
+
+  //the function receives as arguments a vocabulary and a slice with number of terms in each class
  //and returns map with key string and value slice of floats
  //the keys represent a term from vocabulary and the slice of floats has the values of the cond probability 
  //inside the innermost cycle is the the making of the slice which we assign to the every term of the vocabulary
@@ -160,6 +117,25 @@ func makeSliceOfNumDocsInClass(classes map[int] []string, numOfClasses int) []in
  }
  
  
+ 
+ //returns a slice which each index matches the term in vocabulary of the same index 
+ // and its value is the number of counts of the term in all documents 
+ func makeSliceTermCountInClass(numOfClasses int,vocabulary map [string] []int) []int{
+	termCountArr := []int{}
+	for _, value := range vocabulary{
+		for classInd:=0;classInd < numOfClasses; classInd++ {
+			if len(termCountArr) >= numOfClasses{
+				 termCountArr[classInd] += value[classInd] 
+			}else{
+				termCountArr = append(termCountArr,value[classInd])
+			}
+		}
+	}
+ 
+	return termCountArr
+ }
+ 
+
  //returns the confusion matrix which shows classification
  // accuracy by showing the correct and incorrect predictions on each class.
  func makeConfMatrix(testClassCorpus map[int] []string,
@@ -180,33 +156,6 @@ func makeSliceOfNumDocsInClass(classes map[int] []string, numOfClasses int) []in
 	return confusionMatrix
  }
  
- //returns sum of the elements of the matrix
- func sumMatrixValues(confusionMatrix [][]int) int{
-	var sum int
-	for _, col := range confusionMatrix{
-		for _, value := range col{
-			sum+= value
-		}
-	}
-	return sum
- }
- 
- //sum the values of slice of ints 
- func sum(sl []int) int {  
-	result := 0  
-	for _, numb := range sl {  
-	 result += numb  
-	}  
-	return result  
- }  
- 
- func numberDocByClass(testClassCorpus map[int] []string) []int{
-	docsCountByClass := []int{}
-	for _, docs := range testClassCorpus{
-		docsCountByClass = append(docsCountByClass, len(docs))
-	}
-	return docsCountByClass
- }
 
 //returns the Precision, F-score and the recall of the classificator for each document of a test set of documents
 func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){
@@ -249,3 +198,56 @@ func calcOverall(precision []float64,recall  []float64, fScore []float64,
 	return precisionOverall, recallOverall, fScoreOverall
 }
 
+//returns number of all docs in all classes
+func calNumAllDocs(classes map[int] []string) int{
+	numOfDocs := 0
+	for _,value := range classes{
+		numOfDocs += len(value)
+	}
+	return numOfDocs
+}
+
+//returns number of classes 
+func calNumOfClasses(classes map[int] []string) int{
+	return len(classes)
+}
+
+//returns a slice of strings by spliting a given document into terms
+func extractTerms(doc string) []string{
+	return strings.Fields(doc)
+}
+
+//returns number of documents in each class
+func classDocsNum(classDocs []string) int{
+	return len(classDocs)
+}
+
+ //returns sum of the elements of the matrix
+ func sumMatrixValues(confusionMatrix [][]int) int{
+	var sum int
+	for _, col := range confusionMatrix{
+		for _, value := range col{
+			sum+= value
+		}
+	}
+	return sum
+ }
+ 
+ //sum the values of slice of ints 
+ func sum(sl []int) int {  
+	result := 0  
+	for _, numb := range sl {  
+	 result += numb  
+	}  
+	return result  
+ }  
+ 
+ func numberDocByClass(testClassCorpus map[int] []string) []int{
+	docsCountByClass := []int{}
+	for _, docs := range testClassCorpus{
+		docsCountByClass = append(docsCountByClass, len(docs))
+	}
+	return docsCountByClass
+ }
+
+ func convertText(document []string){}

@@ -37,13 +37,11 @@ func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text 
    fmt.Println(len(priorC))
    for classInd, value := range priorC{
 	   score := math.Log(value)
-	   fmt.Println(classInd , score)
 	   for _, term := range terms{
 		   if condProbTerm, ok := condProb[term]; ok {
 			   score += math.Log(condProbTerm[classInd])
 		   }
 	   }
-	   //fmt.Println(classInd , score)
 	   if classInd == 0 || score > maxScore{
 		   maxScore = score
 		   classificatedAs = classInd
