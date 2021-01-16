@@ -34,7 +34,7 @@ func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text 
    terms  := extractTerms(text)
    var classificatedAs int 
    var maxScore float64
-   fmt.Println(len(priorC))
+   //fmt.Println(len(priorC))
    for classInd, value := range priorC{
 	   score := math.Log(value)
 	   for _, term := range terms{
@@ -132,12 +132,14 @@ func makeSliceTermCountInClass(numOfClasses int,vocabulary map [string] []int) [
 //inside the innermost cycle is the the making of the slice which we assign to the every term of the vocabulary
 func makeSliceCondProb(vocabulary map [string] []int, sliceNumOfTermClass []int) map [string] []float64{
    sliceCondProb := make(map [string] []float64)
-   temp := [] float64{}
+  
   // i := 0
    sizeV := len(vocabulary)
    for term, value := range vocabulary{
+	     temp := [] float64{}
 	   for class,numOfTermsInClass := range sliceNumOfTermClass{
 		   temp = append(temp, (float64(value[class] + 1)/float64(numOfTermsInClass + sizeV)))		   
+
 	   }
 	   sliceCondProb[term] = temp
 	}
@@ -189,13 +191,11 @@ func makeConfMatrix(testClassCorpus map[int] []string,
 }
 
 //returns sum of the elements of the matrix
-func sumMatrixValues(confusionMatrix [][]int) int{
+func sumMatrixValues(confussionMatrix [][]int, classInd int, numOfClasses int) int{
    var sum int
-   for _, col := range confusionMatrix{
-	   for _, value := range col{
-		   sum+= value
+	   for i := 0; i < numOfClasses; i++ { 
+		   sum += confussionMatrix[i][classInd]
 	   }
-   }
    return sum
 }
 
@@ -219,16 +219,16 @@ func numberDocByClass(testClassCorpus map[int] []string) []int{
 //returns the Precision, F-score and the recall of the classificator for each document of a test set of documents
 func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){ 
    
-   countDocsExtracted := sumMatrixValues(confusionMatrix)
+  
    precision := []float64{}
    recall := []float64{}
    fScore := []float64{}
-
    for classInd := 0; classInd < numOfClasses; classInd++{
+	   countDocsExtracted := sumMatrixValues(confusionMatrix, classInd, numOfClasses)
 	   if confusionMatrix[classInd][classInd] == 0{
-			precision = append(precision, 0.0)
-			recall = append(precision, 0.0)
-			fScore = append(precision, 0.0)
+				precision = append(precision, 0.0)
+				recall = append(recall, 0.0)
+				fScore = append(fScore, 0.0)
 	   }else{
 	   precision = append(precision, (float64(confusionMatrix[classInd][classInd]) / float64(countDocsExtracted)))
 	   recall    = append(recall,    (float64(confusionMatrix[classInd][classInd]) / float64(numAllDocsByClass[classInd])))
@@ -249,7 +249,7 @@ func calcOverall(precision []float64,recall  []float64, fScore []float64,
    allDocs := sum(countDocsClass)
 
    for classInd := 0; classInd < numOfClasses; classInd++{
-	   precisionOverall += (float64(precision[classInd] * precision[classInd])/ float64(allDocs))
+	   precisionOverall += (float64(countDocsClass[classInd]) * precision[classInd])/ float64(allDocs)
 	   recallOverall    += (float64(countDocsClass[classInd]) * recall[classInd]) / float64(allDocs)
    }
 
@@ -383,38 +383,40 @@ func convert(record string) string{
 }
 func main() {
 	classes := make(map [int] []string)
-	filesAll, err := ioutil.ReadDir("src\\golang_course\\project\\all")
+	filesAll, err := ioutil.ReadDir("D:\\FMI\\golang_workspace\\src\\journalism")
 	if err != nil {
         log.Fatal(err)
 	}
-	for i := 0; i < len(filesAll) - 1; i++{
-		for _, classF := range filesAll {
-			classNames := "src\\golang_course\\project\\all\\" + classF.Name()
+	fmt.Println(filesAll)
+	//for i := 0; i < len(filesAll) - 1; i++{
+		for i, classF := range filesAll {
+			classNames := "D:\\FMI\\golang_workspace\\src\\journalism\\" + classF.Name()
+			fmt.Println(classNames)
 			files, err := ioutil.ReadDir(classNames)
 			if err != nil {
 				log.Fatal(err)
 			}
 			records := []string{}
 			for _, f := range files {
-				fileName := "src\\golang_course\\project\\all\\C-Culture\\" + f.Name()
+				fileName := classNames + "\\" + f.Name()
+				//fmt.Println(fileName)
 				record,_ := ioutil.ReadFile(fileName)
 				recordStr := convert(string(record))
-			//	fmt.Println(recordStr)
 				records = append(records, recordStr)
 			}
 			classes[i] = records
 		}
-	}
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
 	for class, docs:= range classes{
 		testCount := float64(len(docs)) * 0.1
 		testSet[class] = docs[:int(testCount)]
 		trainSet[class] = docs[int(testCount):]
-	}
-	_, condProb, prior := TrainMultinomialNB(trainSet)
-	text1 := "Ние виждаме една серия от управленски провали. Укрепено ли е правителството - не то не съществува. равителството е несъществуващото - в този тежък момент, когато достигаме близо 1000 заразени на ден, ако говорим за здравния проблем "
-	fmt.Println(applyMultinomialNB(condProb, prior, text1 ))
-	//testClassifier(testSet, vocabulary,condProb, prior)
+	}	
+	vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
+	fmt.Println("print херат: ", condProb["херат"])
+	//text1 := "Ние виждаме една серия от управленски провали. Укрепено ли е правителството - не то не съществува. равителството е несъществуващото - в този тежък момент, когато достигаме близо 1000 заразени на ден, ако говорим за здравния проблем "
+	//fmt.Println(applyMultinomialNB(condProb, prior, text1 ))
+	testClassifier(testSet, vocabulary ,condProb, prior)
 }
 	
