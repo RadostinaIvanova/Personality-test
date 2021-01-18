@@ -1,13 +1,14 @@
 package main
 
 import (
-	//"encoding/csv"
+	"encoding/csv"
 	"fmt"
 	"strings"
 	"strconv"
-	"io/ioutil"
-	// "path/filepath"
-    "log"
+	//"io/ioutil"
+	//"path/filepath"
+	//"log"
+	"os"
 )
 
 import 
@@ -186,7 +187,10 @@ func makeConfMatrix(testClassCorpus map[int] []string,
 		   confusionMatrix[classInd][classified_as_doc] += 1
 		   }
 	   }
-	fmt.Println(confusionMatrix)
+	for _, value := range confusionMatrix{
+		fmt.Println(value)
+	}
+	//fmt.Println(confusionMatrix)
    return confusionMatrix
 }
 
@@ -322,21 +326,74 @@ func change(classType string) int{
 	}
 	return 0
 }
-func putInClass(records [][]string)map[int] []string{
+// func putInClass(records [][]string)map[int] []string{
+
+// 	classes :=  make(map[int] []string)
+// 	for _, record := range records{
+// 		classTypeStr := record[len(record) - 1]
+// 		classType := change(classTypeStr)
+// 		record = record[0 : len(record) - 1]
+// 		newRec := strings.Join(record[:]," ")
+// 		classes[classType] = append(classes[classType], newRec)
+		
+// 	}
+// 	return classes
+// }
+
+func putInClass2(records [][]string)map[int] []string{
 
 	classes :=  make(map[int] []string)
 	for _, record := range records{
-		classTypeStr := record[len(record) - 1]
-		classType := change(classTypeStr)
-		record = record[0 : len(record) - 1]
-		newRec := strings.Join(record[:]," ")
-		classes[classType] = append(classes[classType], newRec)
+		classTypeStr := record[0]
+		classType := change2(classTypeStr)
+		//fmt.Println(string(record[len(record) - 1][0]))
+		//fmt.Println(record[len(record) - 1])
+	
+		classes[classType] = append(classes[classType], record[len(record) - 1])
 		
 	}
 	return classes
 }
+func transformToLowerAndEraseDots(str string) string{
 
-//func main() {
+		newValue := strings.ToLower(str)
+		newValue = strings.Replace(newValue, ".", "", -1)
+		newValue = strings.Replace(newValue, "|||", "", -1)
+		newValue = strings.Replace(newValue, "[", "", -1)
+		newValue = strings.Replace(newValue, "]", "", -1)
+		newValue = strings.Replace(newValue, "!", "", -1)
+		newValue = strings.Replace(newValue, "?", "", -1)
+		newValue = strings.Replace(newValue, ",", "", -1)
+		newValue = strings.Replace(newValue, "and", "", -1)
+		newValue = strings.Replace(newValue, "or", "", -1)
+		
+	
+	 return newValue
+}
+
+func change2(classType string) int{
+	switch classType{
+	case "INTJ": return 0
+	case "INTP" : return 1
+	case "ENTJ" : return 2
+	case "INFJ" : return 3
+	case "INFP" : return 4
+	case "ENFJ" : return 5
+	case "ENFP" : return 6
+	case "ESFJ" : return 7
+	case "ISTP" : return 8
+	case "ISFP" : return 9
+	case "ESTP" : return 10
+	case "ESFP" : return 11
+	case "ENTP" : return 12
+	case "ISTJ" : return 13
+	case "ISFJ" : return 14
+	case "ESTJ" : return 15
+	}
+	return 0
+}
+
+// func main() {
 // 	csvFile, err := os.Open("D:\\FMI\\golang_workspace\\src\\golang_course\\project\\data1.csv")
 // 	defer csvFile.Close()
 
@@ -350,7 +407,7 @@ func putInClass(records [][]string)map[int] []string{
 // 	for {
 		
 // 		record, err1 := csvLines.Read()
-// 		if(err1 == io.EOF){
+// 		if(err1 != nil){
 // 			break
 // 		}
 		
@@ -358,65 +415,147 @@ func putInClass(records [][]string)map[int] []string{
 // 			if check == true{
 // 			record = record[2:len(record)-1]
 // 			record = convertFloatToStrRecord(record) 
+// 			record = transformToLowerAndEraseDots(record)
 // 			str1 = append(str1, record)
 // 			}
 // 		}
 // 		check = true
 // 	 }
-// 	//fmt.Println(str1)
-// 	classes := putInClass(str1)
+// 	 classes := putInClass(str1)
+
+// 	 //fmt.Println(str1)
+// 	// for classInd, value := range classes{
+// 	// 	for _, sentence := range value{
+// 	// 	fmt.Println("Class: ", classInd, "value: ",sentence )
+// 	// 	}
+// 	// }
+// 	fmt.Println(len(classes[1]))
+// 	fmt.Println(len(classes[2]))
+// 	fmt.Println(len(classes[3]))
+// 	fmt.Println(len(classes[4]))
+// 	fmt.Println(len(classes[5]))
+// 	fmt.Println(len(classes[6]))
 // 	testSet := make(map[int] []string)
 // 	trainSet := make(map[int] []string)
+// 	testCount := 0.0
 // 	for class, docs:= range classes{
-// 		fmt.Println(len(docs))
-// 		testCount := float64(len(docs)) * 0.1
+// 		if(len(docs) > 1000){
+// 			testCount = float64(len(docs)) * 0.1
+// 		}else{
+// 			testCount = 1.0
+// 		}
 // 		testSet[class] = docs[:int(testCount)]
 // 		trainSet[class] = docs[int(testCount):]
-// 	}
+// 		}
+// 	fmt.Println(len(testSet[1]))
+// 	fmt.Println(len(testSet[2]))
+// 	fmt.Println(len(testSet[3]))
+// 	fmt.Println(len(testSet[4]))
+// 	fmt.Println(len(testSet[5]))
+// 	fmt.Println(len(testSet[6]))	
 // 	vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
 // 	fmt.Println(applyMultinomialNB(condProb, prior,"i didn't know humanity back love and family"))
 // 	testClassifier(testSet, vocabulary,condProb, prior)
 // }
 
-func convert(record string) string{
-	return strings.Replace(record, "***", "", -1)
-}
-func main() {
-	classes := make(map [int] []string)
-	filesAll, err := ioutil.ReadDir("D:\\FMI\\golang_workspace\\src\\journalism")
+// func convert(record string) string{
+// 	return strings.Replace(record, "***", "", -1)
+// }
+// func main() {
+// 	classes := make(map [int] []string)
+// 	filesAll, err := ioutil.ReadDir("D:\\FMI\\golang_workspace\\src\\journalism")
+// 	if err != nil {
+//         log.Fatal(err)
+// 	}
+// 	fmt.Println(filesAll)
+// 	//for i := 0; i < len(filesAll) - 1; i++{
+// 		for i, classF := range filesAll {
+// 			classNames := "D:\\FMI\\golang_workspace\\src\\journalism\\" + classF.Name()
+// 			fmt.Println(classNames)
+// 			files, err := ioutil.ReadDir(classNames)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			records := []string{}
+// 			for _, f := range files {
+// 				fileName := classNames + "\\" + f.Name()
+// 				record,_ := ioutil.ReadFile(fileName)
+// 				recordStr := convert(string(record))
+// 				recordStrToLower := strings.ToLower(recordStr)
+// 				records = append(records, recordStrToLower)
+// 			}
+// 			classes[i] = records
+// 		}
+// 	// for classInd, value := range classes{
+// 	// 				for _, sentence := range value{
+// 	// 				fmt.Println("Class: ", classInd, "value: ",sentence )
+// 	// 				}
+// 	// 			}
+// 	testSet := make(map[int] []string)
+// 	trainSet := make(map[int] []string)
+// 	for class, docs:= range classes{
+// 		testCount := float64(len(docs)) * 0.1
+// 		testSet[class] = docs[:int(testCount)]
+// 		trainSet[class] = docs[int(testCount):]
+// 	}	
+// 	vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
+// 	fmt.Println("print херат: ", condProb["херат"])
+// 	//text1 := "Ние виждаме една серия от управленски провали. Укрепено ли е правителството - не то не съществува. равителството е несъществуващото - в този тежък момент, когато достигаме близо 1000 заразени на ден, ако говорим за здравния проблем "
+// 	//fmt.Println(applyMultinomialNB(condProb, prior, text1 ))
+// 	testClassifier(testSet, vocabulary ,condProb, prior)
+// }
+	
+func main(){
+	csvFile, err := os.Open("D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv")
+	defer csvFile.Close()
+
 	if err != nil {
-        log.Fatal(err)
+		fmt.Println(err)
 	}
-	fmt.Println(filesAll)
-	//for i := 0; i < len(filesAll) - 1; i++{
-		for i, classF := range filesAll {
-			classNames := "D:\\FMI\\golang_workspace\\src\\journalism\\" + classF.Name()
-			fmt.Println(classNames)
-			files, err := ioutil.ReadDir(classNames)
-			if err != nil {
-				log.Fatal(err)
-			}
-			records := []string{}
-			for _, f := range files {
-				fileName := classNames + "\\" + f.Name()
-				//fmt.Println(fileName)
-				record,_ := ioutil.ReadFile(fileName)
-				recordStr := convert(string(record))
-				records = append(records, recordStr)
-			}
-			classes[i] = records
+	fmt.Println("Successfully Opened CSV file")
+    csvLines := csv.NewReader(csvFile)
+	check := false
+//	check2 := true
+	var all [][]string
+	var classAndDoc[] string
+	for {
+		record, err1 := csvLines.Read()
+		if(err1 != nil){
+			break
 		}
+		if check == true{
+			doc := transformToLowerAndEraseDots(record[1])
+			classAndDoc := append(classAndDoc, record[0])
+			classAndDoc = append(classAndDoc, doc)
+			all = append(all, classAndDoc)
+			}
+		check = true
+	 }
+	
+	classes := putInClass2(all)
+	// fmt.Println(len(classes))
+	// fmt.Println(str1)
+	//sum := 0
+	// for classInd, value := range classes{
+	// 	fmt.Println("Print class: ", classInd, "Print number of docs in current class: ", value)
+	// 	sum+=len(value)
+	// }
+	// fmt.Println(sum)
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
+	testCount := 0.0
 	for class, docs:= range classes{
-		testCount := float64(len(docs)) * 0.1
+		// if(len(docs) > 10){
+		// 	testCount = float64(len(docs)) * 0.2
+		// }else{
+		// 	testCount = 1.0
+		// }
+		testCount = 10
 		testSet[class] = docs[:int(testCount)]
-		trainSet[class] = docs[int(testCount):]
-	}	
-	vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
-	fmt.Println("print херат: ", condProb["херат"])
-	//text1 := "Ние виждаме една серия от управленски провали. Укрепено ли е правителството - не то не съществува. равителството е несъществуващото - в този тежък момент, когато достигаме близо 1000 заразени на ден, ако говорим за здравния проблем "
-	//fmt.Println(applyMultinomialNB(condProb, prior, text1 ))
-	testClassifier(testSet, vocabulary ,condProb, prior)
-}
+		trainSet[class] = docs[int(testCount):20]
+		}
 	
+	vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
+	fmt.Println(applyMultinomialNB(condProb, prior,"i didn't know humanity back love and family"))
+	testClassifier(testSet, vocabulary,condProb, prior)
+}
