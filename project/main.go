@@ -371,24 +371,46 @@ func transformToLowerAndEraseDots(str string) string{
 	 return newValue
 }
 
+// func change2(classType string) int{
+// 	switch classType{
+// 	case "INTJ": return 0
+// 	case "INTP" : return 1
+// 	case "ENTJ" : return 2
+// 	case "INFJ" : return 3
+// 	case "INFP" : return 4
+// 	case "ENFJ" : return 5
+// 	case "ENFP" : return 6
+// 	case "ESFJ" : return 7
+// 	case "ISTP" : return 8
+// 	case "ISFP" : return 9
+// 	case "ESTP" : return 10
+// 	case "ESFP" : return 11
+// 	case "ENTP" : return 12
+// 	case "ISTJ" : return 13
+// 	case "ISFJ" : return 14
+// 	case "ESTJ" : return 15
+// 	}
+// 	return 0
+// }
+
 func change2(classType string) int{
 	switch classType{
-	case "INTJ": return 0
-	case "INTP" : return 1
-	case "ENTJ" : return 2
-	case "INFJ" : return 3
-	case "INFP" : return 4
-	case "ENFJ" : return 5
-	case "ENFP" : return 6
-	case "ESFJ" : return 7
-	case "ISTP" : return 8
-	case "ISFP" : return 9
-	case "ESTP" : return 10
-	case "ESFP" : return 11
-	case "ENTP" : return 12
-	case "ISTJ" : return 13
-	case "ISFJ" : return 14
-	case "ESTJ" : return 15
+	case "INTJ": return 2
+	case "INTP" : return 0
+	case "ENTJ" : return 1
+	case "INFJ" : return 2
+	case "INFP" : return 0
+	case "ENFJ" : return 1
+	case "ENFP" : return 0 
+	case "ESFJ" : return 3
+	case "ISTP" : return 0
+	case "ISFP" : return 0
+	case "ESTP" : return 3
+	case "ESFP" : return 3
+	case "ENTP" : return 1
+	case "ISTJ" : return 2
+	case "ISFJ" : return 2
+	case "ESTJ" : return 3
 	}
 	return 0
 }
@@ -543,19 +565,20 @@ func main(){
 	// fmt.Println(sum)
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
-	testCount := 0.0
-	for class, docs:= range classes{
+	for i := 200; i < 256;i+=100{
+		for class, docs:= range classes{
 		// if(len(docs) > 10){
 		// 	testCount = float64(len(docs)) * 0.2
 		// }else{
 		// 	testCount = 1.0
 		// }
-		testCount = 10
-		testSet[class] = docs[:int(testCount)]
-		trainSet[class] = docs[int(testCount):20]
-		}
-	
-	vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
-	fmt.Println(applyMultinomialNB(condProb, prior,"i didn't know humanity back love and family"))
-	testClassifier(testSet, vocabulary,condProb, prior)
+			testCount := 50
+			testSet[class] = docs[ : testCount]
+			trainSet[class] = docs[int(testCount):i] //700
+			}
+		
+		vocabulary, condProb, prior := TrainMultinomialNB(trainSet)
+		fmt.Println(applyMultinomialNB(condProb, prior,"bad things happend to good people"))
+		testClassifier(testSet, vocabulary,condProb, prior)
+	}
 }
