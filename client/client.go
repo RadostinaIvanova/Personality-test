@@ -14,24 +14,23 @@ func main(){
 		log.Fatal(err)
 	}
 	defer conn.Close()
-	fmt.Println("Server accessed")
 
 	clientReader := bufio.NewReader(conn)
 	clientWriter := bufio.NewWriter(conn)
-	for{
-	messageReceived, err:= clientReader.ReadString('\n')
-	if err != nil{
-		fmt.Println(err)
-	}
-	fmt.Println(messageReceived)
 
-	readStd := bufio.NewReader(os.Stdin)
-    fmt.Print("Enter text: ")
-	text, _ := readStd.ReadString('\n')
-	
-	
-	clientWriter.WriteString(text + "\n")
-	clientWriter.Flush()
-}
+	for{
+		messageReceived, err:= clientReader.ReadString('?')
+		if err != nil{
+			fmt.Println(err)
+		}
+
+		readStd := bufio.NewReader(os.Stdin)
+		text, err2 := readStd.ReadString('\n')
+		if err2 != nil{
+			fmt.Println(err2)
+		}
+		clientWriter.WriteString(text + "\n")
+		clientWriter.Flush()
+	}
 }
 
