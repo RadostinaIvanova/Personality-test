@@ -7,8 +7,8 @@ import(
 	"fmt"
 	"os"
 	 "strconv"
-	"errors"
-	"classificator"
+	//"errors"
+//	"github.com/RadostinaIvanova/golang-course/NaiveBayesClassificator"
 )
 
 func check(e error) {
@@ -31,7 +31,7 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 		}
 		_, err3 := f.WriteString(messageReceived)
 		   if err3 != nil{
-			   fmt.Println(er3)
+			   fmt.Println(err3)
 			}
 		}
 	f.Close()

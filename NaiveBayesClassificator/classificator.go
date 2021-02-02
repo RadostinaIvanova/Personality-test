@@ -20,7 +20,7 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
  }
  
  //returns the class corresponding to the text given by using formula 	
- func applyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
+ func ApplyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
 	
 	terms  := extractTerms(text)
 	var classificatedAs int 
@@ -43,7 +43,7 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
  }
  
  //testing classifier accuracy
- func testClassifier(testClassCorpus map[int] []string, vocabulary map [string] []int, sliceCondProb map [string] []float64, slicePriorC []float64 ){
+ func TestClassifier(testClassCorpus map[int] []string, vocabulary map [string] []int, sliceCondProb map [string] []float64, slicePriorC []float64 ){
 	numOfClasses := len(testClassCorpus)
 	numDocsByClass := numberDocByClass(testClassCorpus)
 	confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
@@ -162,7 +162,7 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
  
  //returns the confusion matrix which shows classification
  // accuracy by showing the correct and incorrect predictions on each class.
- func makeConfMatrix(testClassCorpus map[int] []string,
+ func MakeConfMatrix(testClassCorpus map[int] []string,
 					numOfClasses int,
 					vocabulary map [string] []int,
 					sliceCondProb map [string] []float64, 

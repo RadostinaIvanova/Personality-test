@@ -17,7 +17,6 @@ func main(){
 
 	clientReader := bufio.NewReader(conn)
 	clientWriter := bufio.NewWriter(conn)
-
 	for{
 		messageReceived, err:= clientReader.ReadString('?')
 		if err != nil{
