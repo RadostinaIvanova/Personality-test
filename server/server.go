@@ -8,12 +8,12 @@ import(
 	"os"
 	"strconv"
 	//"errors"
-	"github.com/RadostinaIvanova/golang-project/naiveBayesClassificator"
+	"github.com/RadostinaIvanova/golang-project/classificator"
 )
 
 
-func classificate(answers string, c naiveBayesClassificator.NBclassificator) int{
-	return classificator.ApplyMultinomialNB(answers,c)
+func classificate(answers string, c NBclassificator) int{
+	return classificator.ApplyMultinomialNB(c,answers)
 }
 
 func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer) string{
@@ -38,7 +38,7 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 	//f.Close()
 	return answers
 }
-func handleConnection(conn net.Conn,indDoc int, questions []string, c NaiveBayesClassificator.NBclassificator){
+func handleConnection(conn net.Conn,indDoc int, questions []string, c classificator.NBclassificator){
 	//fmt.Println("Inside handle connection func")
 	defer conn.Close()
 	serverWriter := bufio.NewWriter(conn)
