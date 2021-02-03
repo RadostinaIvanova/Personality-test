@@ -12,7 +12,7 @@ import(
 )
 
 
-func classificate(answers string, c NBclassificator) int{
+func classificate(answers string, c classificator.NBclassificator) int{
 	return classificator.ApplyMultinomialNB(c,answers)
 }
 
