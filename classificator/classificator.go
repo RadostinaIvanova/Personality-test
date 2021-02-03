@@ -1,4 +1,4 @@
-package naiveBayesClassificator 
+package classificator 
 
 import (
 	 "strings"
