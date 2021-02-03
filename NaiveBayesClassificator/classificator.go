@@ -1,14 +1,19 @@
-package classificator 
+package naiveBayesClassificator 
 
 import (
 	 "strings"
 	 "math"
 	 "fmt"
 )
-func convertText(document []string){}
+
+type NBclassificator struct{
+	Vocabulary map[string] []int
+	CondProb map [string] []float64
+	PriorC []float64
+}
 
 //function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
-func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [string] []float64, []float64 ){
+func TrainMultinomialNB(classes map[int] []string) NBclassificator{
 	numOfAllDocs := calNumAllDocs(classes)
 	numOfClasses := calNumOfClasses(classes)
 	vocabulary := makeVocabulary(classes,numOfClasses)
@@ -16,20 +21,20 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
 	slicePriorC := makeSlicePriorC(numOfAllDocs, makeSliceOfNumDocsInClass)
 	sliceTermCountClass := makeSliceTermCountInClass(numOfClasses, vocabulary)
 	sliceCondProb := makeSliceCondProb(vocabulary,sliceTermCountClass)
-	return vocabulary, sliceCondProb, slicePriorC
+	return NBclassificator{vocabulary, sliceCondProb, slicePriorC}
  }
  
  //returns the class corresponding to the text given by using formula 	
- func ApplyMultinomialNB(condProb map [string] []float64, priorC []float64, text string ) int{
+ func ApplyMultinomialNB(c NBclassificator, text string ) int{
 	
 	terms  := extractTerms(text)
 	var classificatedAs int 
 	var maxScore float64
 	//fmt.Println(len(priorC))
-	for classInd, value := range priorC{
+	for classInd, value := range c.PriorC{
 		score := math.Log(value)
 		for _, term := range terms{
-			if condProbTerm, ok := condProb[term]; ok {
+			if condProbTerm, ok := c.CondProb[term]; ok {
 				score += math.Log(condProbTerm[classInd])
 			}
 		}
@@ -43,10 +48,10 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
  }
  
  //testing classifier accuracy
- func TestClassifier(testClassCorpus map[int] []string, vocabulary map [string] []int, sliceCondProb map [string] []float64, slicePriorC []float64 ){
+ func TestClassifier(c NBclassificator, testClassCorpus map[int] []string){
 	numOfClasses := len(testClassCorpus)
 	numDocsByClass := numberDocByClass(testClassCorpus)
-	confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,vocabulary, sliceCondProb,slicePriorC)
+	confusionMatrix := makeConfMatrix(testClassCorpus, numOfClasses,c)
 	precision, recall, fScore := calcPRF(confusionMatrix, numOfClasses, numDocsByClass)
 	precisionOverall, recallOverall,fScoreOverall := calcOverall(precision, recall, fScore, numOfClasses, numDocsByClass)
 	fmt.Println("Прецизност: ", precision)
@@ -162,18 +167,16 @@ func TrainMultinomialNB(classes map[int] []string) (map [string] []int,map [stri
  
  //returns the confusion matrix which shows classification
  // accuracy by showing the correct and incorrect predictions on each class.
- func MakeConfMatrix(testClassCorpus map[int] []string,
+ func makeConfMatrix(testClassCorpus map[int] []string,
 					numOfClasses int,
-					vocabulary map [string] []int,
-					sliceCondProb map [string] []float64, 
-					slicePriorC []float64 ) [][]int{
+					c NBclassificator) [][]int{
 	 confusionMatrix := make([][]int, numOfClasses)
 	 for i := range confusionMatrix {
 		 confusionMatrix[i] = make([]int,numOfClasses)
 	 }
 	for classInd := 0; classInd <= numOfClasses;classInd++{
 		for _, doc := range testClassCorpus[classInd]{
-			classified_as_doc := applyMultinomialNB(sliceCondProb, slicePriorC,doc)
+			classified_as_doc := ApplyMultinomialNB(c, doc)
 			confusionMatrix[classInd][classified_as_doc] += 1
 			}
 		}
