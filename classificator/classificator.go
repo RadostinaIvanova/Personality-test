@@ -26,11 +26,10 @@ func TrainMultinomialNB(classes map[int] []string) NBclassificator{
  
  //returns the class corresponding to the text given by using formula 	
  func ApplyMultinomialNB(c NBclassificator, text string ) int{
-	
 	terms  := extractTerms(text)
 	var classificatedAs int 
 	var maxScore float64
-	//fmt.Println(len(priorC))
+
 	for classInd, value := range c.PriorC{
 		score := math.Log(value)
 		for _, term := range terms{
@@ -61,6 +60,7 @@ func TrainMultinomialNB(classes map[int] []string) NBclassificator{
 	fmt.Println("Общ Обхват: ", recallOverall)
 	fmt.Println("Обща F-score: ", fScoreOverall)
  }
+
  //returns number of all docs in all classes
  func calNumAllDocs(classes map[int] []string) int{
 	numOfDocs := 0

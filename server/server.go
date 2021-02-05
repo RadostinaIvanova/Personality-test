@@ -7,10 +7,45 @@ import(
 	"fmt"
 	"os"
 	"strconv"
+	 "encoding/gob"
 	//"errors"
 	"github.com/RadostinaIvanova/golang-project/classificator"
+	
 )
 
+
+func loadTrainedClassificator(filename string) classificator.NBclassificator{
+	f, err := os.Open(filename)
+	if err != nil{
+		log.Println(err.Error())
+	}
+	defer f.Close()
+
+	c := classificator.NBclassificator{}
+	decoder := gob.NewDecoder(f)
+	decoder.Decode(&c)	
+	return c
+}
+
+func writeEncodedToFile(filename string, c classificator.NBclassificator){
+	f, err := os.Create(filename)
+	if err != nil{
+		log.Println(err.Error())
+	}
+	defer f.Close()
+	encoder := gob.NewEncoder(f)
+	encoder.Encode(c.CondProb)
+}
+
+// Exists reports whether the named file or directory exists.
+func exists(name string) bool {
+    if _, err := os.Stat(name); err != nil {
+        if os.IsNotExist(err) {
+            return false
+        }
+    }
+    return true
+}
 
 func classificate(answers string, c classificator.NBclassificator) int{
 	return classificator.ApplyMultinomialNB(c,answers)
@@ -71,6 +106,13 @@ func main(){
 	//var indDoc int = 0
 	questionsDoc := "C://Users//Radi//Downloads//questions.txt"
 	questions := extractQuestionsFromFile(questionsDoc)
+	filename := "classificator.go"
+	if !exists(filename){
+		trainSet, testSet := 
+		writeEncodedToFile(filename)
+	}
+	c := loadTrainedClassificator(filename)
+	
 	for{
 		conn,err := ln.Accept()
 		if err!= nil{

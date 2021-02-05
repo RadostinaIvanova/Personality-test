@@ -7,20 +7,19 @@ import(
 	"os"
 )
 
-
-func transform(filename string) (map [int] []string, map[int] []string){
-	all := extractAndChange(filename)
-	classes := putInClass(all)
-	testSet, trainSet := makeSets(classes)
-	return testSet, trainSet
+func makeClassesFromFile(filename string) (map[int][] string,map [int][]string){
+	all := readCsvFile(filename)	
+	classes := divideIntoClasses(all)
+	trainSet, testSet := divideIntoTrainTestSets(classes)
+	return trainSet,testSet
 }
 
-func extractAndChange(fileName string) [][]string{
-	csvFile, err := os.Open("D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv")
-	defer csvFile.Close()
+func readCsvFile(filename string) [][]string{
+	csvFile, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer csvFile.Close()
     csvLines := csv.NewReader(csvFile)
 	
 	check := false
@@ -33,59 +32,39 @@ func extractAndChange(fileName string) [][]string{
 			break
 		}
 		if check == true{
-			doc := transformToLowerAndEraseSymbols(record[1])
+			doc := transformToLowerAndEraseDots(record[1])
 			classAndDoc := append(classAndDoc, record[0])
 			classAndDoc = append(classAndDoc, doc)
 			all = append(all, classAndDoc)
 			}
 		check = true
 	 }
-	return all
+	 return all	
 }
 
-func makeSets(classes map[int] []string) (map[int] []string, map[int] []string){
+func divideIntoTrainTestSets(classes map [int] []string)(map[int] []string,map [int] []string){
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
-	for i := 200; i < 256;i+=100{
+	max := 200
 		for class, docs:= range classes{
 			testCount := 50
-			testSet[class] = docs[ : testCount]
-			trainSet[class] = docs[int(testCount):i] //700
-		}
-	}
-	return testSet, trainSet
-}
+			testSet[class] = docs[ :testCount]
+			trainSet[class] = docs[int(testCount):max] //700
+			}
+	return trainSet, testSet
+}	
 
-func putInClass(records [][]string)map[int] []string{
+func divideIntoClasses(records [][]string)map[int] []string{
 	classes :=  make(map[int] []string)
 	for _, record := range records{
 		classTypeStr := record[0]
-		classType := changeClassToInt(classTypeStr)
+		classType := encodeClassToInt(classTypeStr)
 		classes[classType] = append(classes[classType], record[len(record) - 1])
-		
 	}
 	return classes
 }
 
-func transformToLowerAndEraseSymbols(str string) string{
-
-		newValue := strings.ToLower(str)
-		newValue = strings.Replace(newValue, ".", "", -1)
-		newValue = strings.Replace(newValue, "|||", "", -1)
-		newValue = strings.Replace(newValue, "[", "", -1)
-		newValue = strings.Replace(newValue, "]", "", -1)
-		newValue = strings.Replace(newValue, "!", "", -1)
-		newValue = strings.Replace(newValue, "?", "", -1)
-		newValue = strings.Replace(newValue, ",", "", -1)
-		newValue = strings.Replace(newValue, "and", "", -1)
-		newValue = strings.Replace(newValue, "or", "", -1)
-		
-	
-	 return newValue
-}
-
-
-func changeClassToInt(classType string) int{
+func encodeClassToInt(classType string) int{
 	switch classType{
 	case "INTJ": return 2
 	case "INTP" : return 0
@@ -105,4 +84,19 @@ func changeClassToInt(classType string) int{
 	case "ESTJ" : return 3
 	}
 	return 0
+}
+
+
+func transformToLowerAndEraseDots(str string) string{
+	newValue := strings.ToLower(str)
+	newValue = strings.Replace(newValue, ".", "", -1)
+	newValue = strings.Replace(newValue, "|||", "", -1)
+	newValue = strings.Replace(newValue, "[", "", -1)
+	newValue = strings.Replace(newValue, "]", "", -1)
+	newValue = strings.Replace(newValue, "!", "", -1)
+	newValue = strings.Replace(newValue, "?", "", -1)
+	newValue = strings.Replace(newValue, ",", "", -1)
+	newValue = strings.Replace(newValue, "and", "", -1)
+	newValue = strings.Replace(newValue, "or", "", -1)
+ return newValue
 }
