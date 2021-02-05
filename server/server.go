@@ -14,7 +14,6 @@ import(
 	
 )
 
-
 func loadTrainedClassificator(filename string) classificator.NBclassificator{
 	f, err := os.Open(filename)
 	if err != nil{
@@ -24,7 +23,10 @@ func loadTrainedClassificator(filename string) classificator.NBclassificator{
 
 	c := classificator.NBclassificator{}
 	decoder := gob.NewDecoder(f)
-	decoder.Decode(&c)	
+	errd := decoder.Decode(&c)	
+	if errd != nil {
+		log.Fatal("decode error 1:", errd)
+	}
 	return c
 }
 
@@ -35,7 +37,7 @@ func writeEncodedToFile(filename string, c classificator.NBclassificator){
 	}
 	defer f.Close()
 	encoder := gob.NewEncoder(f)
-	encoder.Encode(c.CondProb)
+	encoder.Encode(c)
 }
 
 // Exists reports whether the named file or directory exists.
@@ -72,15 +74,17 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 	//			}
 		}
 	//f.Close()
+	fmt.Println(questions)
 	return answers
 }
-func handleConnection(conn net.Conn,indDoc int, questions []string, c classificator.NBclassificator){
+func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
 	//fmt.Println("Inside handle connection func")
 	defer conn.Close()
 	serverWriter := bufio.NewWriter(conn)
 	serverReader := bufio.NewReader(conn)
 	answers := quiz(questions, *serverReader, *serverWriter)
 	result := classificate(answers,c)
+	fmt.Println("classificate")
 	serverWriter.WriteString(strconv.Itoa(result))
 }
 
@@ -107,20 +111,20 @@ func main(){
 	//var indDoc int = 0
 	questionsDoc := "C://Users//Radi//Downloads//questions.txt"
 	questions := extractQuestionsFromFile(questionsDoc)
-	filename := "classificator.go"
+	
+	filename := "trainedClassificator"
 	if !exists(filename){
-		trainSet, testSet := 
-		writeEncodedToFile(filename)
+		corpusName := "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
+		trainSet,_ := corpus.MakeClassesFromFile(corpusName)
+		c := classificator.TrainMultinomialNB(trainSet)
+		writeEncodedToFile(filename,c )
 	}
 	c := loadTrainedClassificator(filename)
-	
 	for{
 		conn,err := ln.Accept()
 		if err!= nil{
 			log.Println(err.Error())
 		}
-		// fmt.Println("Calling go routine - handle conneciton")
-		//indDoc++
-		go handleConnection(conn,questions)
+		go handleConnection(conn,questions,c)
 	}
 }	

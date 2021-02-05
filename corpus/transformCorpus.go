@@ -42,7 +42,7 @@ func readCsvFile(filename string) [][]string{
 	 return all	
 }
 
-func divideIntoTrainTestSets(classes map [int] []string)(map[int] []string,map [int] []string){
+func divideIntoTrainTestSets(classes map [int] []string)(map [int] []string,map [int] []string){
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
 	max := 200

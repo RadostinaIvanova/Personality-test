@@ -22,7 +22,6 @@ func main(){
 		if err != nil{
 			fmt.Println(err)
 		}
-
 		readStd := bufio.NewReader(os.Stdin)
 		text, err2 := readStd.ReadString('\n')
 		if err2 != nil{
