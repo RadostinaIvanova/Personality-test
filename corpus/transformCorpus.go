@@ -7,7 +7,7 @@ import(
 	"os"
 )
 
-func makeClassesFromFile(filename string) (map[int][] string,map [int][]string){
+func MakeClassesFromFile(filename string) (map[int][] string,map [int][]string){
 	all := readCsvFile(filename)	
 	classes := divideIntoClasses(all)
 	trainSet, testSet := divideIntoTrainTestSets(classes)

@@ -10,6 +10,7 @@ import(
 	 "encoding/gob"
 	//"errors"
 	"github.com/RadostinaIvanova/golang-project/classificator"
+	"github.com/RadostinaIvanova/golang-project/corpus"
 	
 )
 
