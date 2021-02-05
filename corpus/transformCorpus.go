@@ -6,6 +6,8 @@ import(
 	"strings"
 	"os"
 )
+
+
 func transform(filename string) (map [int] []string, map[int] []string){
 	all := extractAndChange(filename)
 	classes := putInClass(all)
@@ -40,6 +42,7 @@ func extractAndChange(fileName string) [][]string{
 	 }
 	return all
 }
+
 func makeSets(classes map[int] []string) (map[int] []string, map[int] []string){
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
@@ -52,6 +55,7 @@ func makeSets(classes map[int] []string) (map[int] []string, map[int] []string){
 	}
 	return testSet, trainSet
 }
+
 func putInClass(records [][]string)map[int] []string{
 	classes :=  make(map[int] []string)
 	for _, record := range records{
@@ -62,6 +66,7 @@ func putInClass(records [][]string)map[int] []string{
 	}
 	return classes
 }
+
 func transformToLowerAndEraseSymbols(str string) string{
 
 		newValue := strings.ToLower(str)
