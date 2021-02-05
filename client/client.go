@@ -15,19 +15,21 @@ func main(){
 	}
 	defer conn.Close()
 
-	clientReader := bufio.NewReader(conn)
-	clientWriter := bufio.NewWriter(conn)
+	clientReader := bufio.NewReaderSize(conn,5000)
+	clientWriter := bufio.NewWriterSize(conn,5000)
 	for{
-		_, err:= clientReader.ReadString('?')
+		received, err:= clientReader.ReadString('?')
 		if err != nil{
+			fmt.Println("tuka e ggreshkata")
 			fmt.Println(err)
 		}
+		fmt.Println(received)
 		readStd := bufio.NewReader(os.Stdin)
-		text, err2 := readStd.ReadString('\n')
+		text, err2 := readStd.ReadString('.')
 		if err2 != nil{
 			fmt.Println(err2)
 		}
-		clientWriter.WriteString(text + "\n")
+		clientWriter.WriteString(text)
 		clientWriter.Flush()
 	}
 }

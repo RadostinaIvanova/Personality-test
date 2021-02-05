@@ -55,37 +55,36 @@ func classificate(answers string, c classificator.NBclassificator) int{
 }
 
 func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer) string{
-	//docName := "answers" + strconv.Itoa(indDoc)
-	//f,err := os.OpenFile(docName, os.O_WRONLY|os.O_CREATE, 0666)
-	//check(err)
 	var answers string = ""
-	for _, question := range questions{
+	welcoming := "Welcome! Answer the questions"
+	serverWriter.WriteString(welcoming)
+	serverWriter.Flush()
+	fmt.Println(len(questions))
+	for _ , question := range questions{
 		serverWriter.WriteString(question)
 		serverWriter.Flush()
-
-		messageReceived, err2 := serverReader.ReadString('\n')
+		messageReceived, err2 := serverReader.ReadString('.')
 		if err2!= nil{
 			log.Println(err2.Error())
 		}
+		fmt.Println(messageReceived)
 		answers += messageReceived
-	//		_, err3 := f.WriteString(messageReceived)
-	//		if err3 != nil{
-	//			fmt.Println(err3)
-	//			}
-		}
-	//f.Close()
-	fmt.Println(questions)
+	}
 	return answers
 }
 func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
 	//fmt.Println("Inside handle connection func")
 	defer conn.Close()
-	serverWriter := bufio.NewWriter(conn)
-	serverReader := bufio.NewReader(conn)
+	serverWriter := bufio.NewWriterSize(conn,5000)
+	serverReader := bufio.NewReaderSize(conn,5000)
 	answers := quiz(questions, *serverReader, *serverWriter)
+	fmt.Println(answers)
+	fmt.Println("QSNO E")
 	result := classificate(answers,c)
-	fmt.Println("classificate")
-	serverWriter.WriteString(strconv.Itoa(result))
+	fmt.Println(result)
+	res := strconv.Itoa(result) 
+	serverWriter.WriteString(res + "?");
+	serverWriter.Flush();
 }
 
 func extractQuestionsFromFile(filename string) []string{
@@ -102,13 +101,11 @@ func extractQuestionsFromFile(filename string) []string{
 	return questions 
 }
 func main(){
-	// fmt.Println("Launching server")
 	fmt.Println("Listen on port")
 	ln, err := net.Listen("tcp", ":9000")
 	if err!= nil{
 		log.Println(err.Error())
 	}
-	//var indDoc int = 0
 	questionsDoc := "C://Users//Radi//Downloads//questions.txt"
 	questions := extractQuestionsFromFile(questionsDoc)
 	
