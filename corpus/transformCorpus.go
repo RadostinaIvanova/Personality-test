@@ -90,19 +90,19 @@ func encodeClassToInt(classType string) int{
 
 
 func transformToLowerAndEraseDots(str string) string{
-	reg, err := regexp.Compile("[^a-zA-Z0-9 ]+")
+	reg, err := regexp.Compile("[^a-zA-Z0-9\\s]+")
     if err != nil {
         log.Println(err.Error())
-    } 
+    }
 	newValue := reg.ReplaceAllString(str, "")
 	newValue = strings.ToLower(str)
-	newValue = strings.Replace(newValue, ".", "", -1)
-	newValue = strings.Replace(newValue, "|||", "", -1)
-	newValue = strings.Replace(newValue, "[", "", -1)
-	newValue = strings.Replace(newValue, "]", "", -1)
-	newValue = strings.Replace(newValue, "!", "", -1)
-	newValue = strings.Replace(newValue, "?", "", -1)
-	newValue = strings.Replace(newValue, ",", "", -1)
+	// newValue = strings.Replace(newValue, ".", "", -1)
+	// newValue = strings.Replace(newValue, "|||", "", -1)
+	// newValue = strings.Replace(newValue, "[", "", -1)
+	// newValue = strings.Replace(newValue, "]", "", -1)
+	// newValue = strings.Replace(newValue, "!", "", -1)
+	// newValue = strings.Replace(newValue, "?", "", -1)
+	// newValue = strings.Replace(newValue, ",", "", -1)
 	newValue = strings.Replace(newValue, "and", "", -1)
 	newValue = strings.Replace(newValue, "or", "", -1)
  return newValue
