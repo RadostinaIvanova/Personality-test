@@ -95,7 +95,6 @@ func transformToLowerAndEraseDots(str string) string{
         log.Println(err.Error())
     }
 	newValue := reg.ReplaceAllString(str, "")
-	fmt.Println(newValue)
 	newValue = strings.ToLower(str)
 	// newValue = strings.Replace(newValue, ".", "", -1)
 	// newValue = strings.Replace(newValue, "|||", "", -1)
