@@ -112,7 +112,7 @@ func main(){
 		trainSet,testSet := corpus.MakeClassesFromFile(corpusName)
 		c := classificator.TrainMultinomialNB(trainSet)
 		writeEncodedToFile(filename,c )
-		fmt.Println(c)
+		//fmt.Println(c)
 		classificator.TestClassifier(c,testSet)
 	}
 	c := loadTrainedClassificator(filename)
