@@ -105,12 +105,14 @@ func main(){
 	}
 	questionsDoc := "C://Users//Radi//Downloads//questions.txt"
 	questions := extractQuestionsFromFile(questionsDoc)
+
 	filename := "trainedClassificator"
 	if !exists(filename){
 		corpusName := "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
 		trainSet,testSet := corpus.MakeClassesFromFile(corpusName)
 		c := classificator.TrainMultinomialNB(trainSet)
 		writeEncodedToFile(filename,c )
+		fmt.Println(c)
 		classificator.TestClassifier(c,testSet)
 	}
 	c := loadTrainedClassificator(filename)

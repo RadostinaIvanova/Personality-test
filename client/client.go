@@ -20,7 +20,6 @@ func main(){
 	for{
 		received, err:= clientReader.ReadString('?')
 		if err != nil{
-			fmt.Println("tuka e ggreshkata")
 			fmt.Println(err)
 		}
 		fmt.Println(received)
