@@ -78,10 +78,7 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 	serverWriter := bufio.NewWriterSize(conn,5000)
 	serverReader := bufio.NewReaderSize(conn,5000)
 	answers := quiz(questions, *serverReader, *serverWriter)
-	fmt.Println(answers)
-	fmt.Println("QSNO E")
 	result := classificate(answers,c)
-	fmt.Println(result)
 	res := strconv.Itoa(result) 
 	serverWriter.WriteString(res + "?");
 	serverWriter.Flush();
@@ -108,15 +105,16 @@ func main(){
 	}
 	questionsDoc := "C://Users//Radi//Downloads//questions.txt"
 	questions := extractQuestionsFromFile(questionsDoc)
-	
 	filename := "trainedClassificator"
 	if !exists(filename){
 		corpusName := "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
-		trainSet,_ := corpus.MakeClassesFromFile(corpusName)
+		trainSet,testSet := corpus.MakeClassesFromFile(corpusName)
 		c := classificator.TrainMultinomialNB(trainSet)
 		writeEncodedToFile(filename,c )
+		classificator.TestClassifier(c,testSet)
 	}
 	c := loadTrainedClassificator(filename)
+	
 	for{
 		conn,err := ln.Accept()
 		if err!= nil{

@@ -72,7 +72,7 @@ func encodeClassToInt(classType string) int{
 	case "INFJ" : return 2
 	case "INFP" : return 0
 	case "ENFJ" : return 1
-	case "ENFP" : return 0 
+	case "ENFP" : return 1 
 	case "ESFJ" : return 3
 	case "ISTP" : return 0
 	case "ISFP" : return 0
