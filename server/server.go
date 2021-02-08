@@ -104,13 +104,15 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 	serverWriter.WriteString(pType + "\n");
 	serverWriter.Flush();
 	path := "D:\\FMI\\Info\\PersonalityTypes4\\" + pType + "\\"
-	var optionReceived string
-	for ; optionReceived != "Exit";{
+	for{
 		optionReceived, err2 := serverReader.ReadString('\n')
 		if err2!= nil{
 			log.Println(err2.Error())
 		}
 		optionReceived = strings.TrimSuffix(optionReceived, "\n")
+		if optionReceived == "Quit"{
+			break
+		}
 		str := extractInfo(optionReceived, path)
 		serverWriter.WriteString(str + "\n");
 		serverWriter.Flush();
