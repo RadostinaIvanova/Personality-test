@@ -16,6 +16,11 @@ import(
 	
 )
 
+const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"
+const pathToDescriptions string = "D:\\FMI\\Info\\PersonalityTypes4\\" 
+const corpusName  string = "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
+const classicatorFileName string = "trainedClassificator"
+
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
 	buff, err := ioutil.ReadFile(filename)
@@ -35,6 +40,12 @@ func personalityTypes(pType int) string{
 	}
 	return "Diplomat"
 }
+
+func saveTrainedClassificator(filename string){
+	trainSet,_ := corpus.MakeClassesFromFile(corpusName)
+	c := classificator.TrainMultinomialNB(trainSet)
+	writeEncodedClassificatorToFile(filename,c )
+}
 func loadTrainedClassificator(filename string) classificator.NBclassificator{
 	f, err := os.Open(filename)
 	if err != nil{
@@ -51,7 +62,14 @@ func loadTrainedClassificator(filename string) classificator.NBclassificator{
 	return c
 }
 
-func writeEncodedToFile(filename string, c classificator.NBclassificator){
+func extractClassificator(filename string) classificator.NBclassificator{
+	if !exists(filename){
+		saveTrainedClassificator(filename)
+	}
+	c := loadTrainedClassificator(filename)
+	return c
+}
+func writeEncodedClassificatorToFile(filename string, c classificator.NBclassificator){
 	f, err := os.Create(filename)
 	if err != nil{
 		log.Println(err.Error())
@@ -71,8 +89,8 @@ func exists(name string) bool {
     return true
 }
 
-func classificate(answers string, c classificator.NBclassificator) int{
-	return classificator.ApplyMultinomialNB(c,answers)
+func classificate(answers string, c classificator.NBclassificator) string {
+	return personalityTypes(classificator.ApplyMultinomialNB(c,answers))
 }
 
 func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer) string{
@@ -92,18 +110,8 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 	}
 	return answers
 }
-func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
-	//fmt.Println("Inside handle connection func")
-	defer conn.Close()
-	serverWriter := bufio.NewWriterSize(conn,5000)
-	serverReader := bufio.NewReaderSize(conn,5000)
-	answers := quiz(questions, *serverReader, *serverWriter)
-	result := classificate(answers,c)
-	pType := personalityTypes(result)
-	fmt.Println(pType)
-	serverWriter.WriteString(pType + "\n");
-	serverWriter.Flush();
-	path := "D:\\FMI\\Info\\PersonalityTypes4\\" + pType + "\\"
+
+func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter bufio.Writer){
 	for{
 		optionReceived, err2 := serverReader.ReadString('\n')
 		if err2!= nil{
@@ -113,10 +121,29 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 		if optionReceived == "Quit"{
 			break
 		}
-		str := extractInfo(optionReceived, path)
+		str := extractInfo(optionReceived, documentsPath)
 		serverWriter.WriteString(str + "\n");
 		serverWriter.Flush();
 	}
+}
+
+func sendType(pType string, serverReader bufio.Reader, serverWriter bufio.Writer){
+	serverWriter.WriteString(pType + "\n");
+	serverWriter.Flush();
+}
+func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
+	//fmt.Println("Inside handle connection func")
+	defer conn.Close()
+	serverWriter := bufio.NewWriterSize(conn,5000)
+	serverReader := bufio.NewReaderSize(conn,5000)
+
+	answers := quiz(questions, *serverReader, *serverWriter)
+	pType := classificate(answers,c)
+	sendType(pType, *serverReader, *serverWriter)
+
+	documentsPath := pathToDescriptions + pType + "\\"
+	optionHandler(documentsPath,*serverReader, *serverWriter)
+	
 }
 
 func extractQuestionsFromFile(filename string) []string{
@@ -139,20 +166,11 @@ func main(){
 	if err!= nil{
 		log.Println(err.Error())
 	}
-	questionsDoc := "C://Users//Radi//Downloads//questions.txt"
-	questions := extractQuestionsFromFile(questionsDoc)
-
-	filename := "trainedClassificator"
-	if !exists(filename){
-		corpusName := "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
-		trainSet,testSet := corpus.MakeClassesFromFile(corpusName)
-		c := classificator.TrainMultinomialNB(trainSet)
-		writeEncodedToFile(filename,c )
-		classificator.TestClassifier(c,testSet)
-	}
-	c := loadTrainedClassificator(filename)
 	
-	for{
+	questions := extractQuestionsFromFile(questionsDoc)
+	c := extractClassificator(classicatorFileName)
+	
+	for {
 		conn,err := ln.Accept()
 		if err!= nil{
 			log.Println(err.Error())
