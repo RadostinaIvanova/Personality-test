@@ -8,12 +8,33 @@ import(
 	"os"
 	"strconv"
 	 "encoding/gob"
+	 "strings"
 	//"errors"
+	"io/ioutil"
 	"github.com/RadostinaIvanova/golang-project/classificator"
 	"github.com/RadostinaIvanova/golang-project/corpus"
 	
 )
 
+func extractInfo(option string, path string) string{
+	filename := path + option + ".txt"
+	buff, err := ioutil.ReadFile(filename)
+	if err != nil {
+        fmt.Print(err)
+    }
+	text := string(buff)
+	return text
+}
+
+func personalityTypes(pType int) string{
+	switch pType{
+		case 0:  return "Diplomat"
+		case 1:  return "Analyst"
+		case 2:  return "Sentinel"
+		case 3:  return "Explorer"
+	}
+	return "Diplomat"
+}
 func loadTrainedClassificator(filename string) classificator.NBclassificator{
 	f, err := os.Open(filename)
 	if err != nil{
@@ -56,18 +77,17 @@ func classificate(answers string, c classificator.NBclassificator) int{
 
 func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer) string{
 	var answers string = ""
-	welcoming := "Welcome! Answer the questions"
-	serverWriter.WriteString(welcoming)
+	serverWriter.WriteString(strconv.Itoa(len(questions)) + "\n")
 	serverWriter.Flush()
-	fmt.Println(len(questions))
 	for _ , question := range questions{
 		serverWriter.WriteString(question)
 		serverWriter.Flush()
-		messageReceived, err2 := serverReader.ReadString('.')
+		messageReceived, err2 := serverReader.ReadString('\n')
 		if err2!= nil{
 			log.Println(err2.Error())
 		}
-		fmt.Println(messageReceived)
+		messageReceived = strings.TrimSuffix(messageReceived, "\n")
+		answers += " "
 		answers += messageReceived
 	}
 	return answers
@@ -79,9 +99,22 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 	serverReader := bufio.NewReaderSize(conn,5000)
 	answers := quiz(questions, *serverReader, *serverWriter)
 	result := classificate(answers,c)
-	res := strconv.Itoa(result) 
-	serverWriter.WriteString(res + "?");
+	pType := personalityTypes(result)
+	fmt.Println(pType)
+	serverWriter.WriteString(pType + "\n");
 	serverWriter.Flush();
+	path := "D:\\FMI\\Info\\PersonalityTypes4\\" + pType + "\\"
+	var optionReceived string
+	for ; optionReceived != "Exit";{
+		optionReceived, err2 := serverReader.ReadString('\n')
+		if err2!= nil{
+			log.Println(err2.Error())
+		}
+		optionReceived = strings.TrimSuffix(optionReceived, "\n")
+		str := extractInfo(optionReceived, path)
+		serverWriter.WriteString(str + "\n");
+		serverWriter.Flush();
+	}
 }
 
 func extractQuestionsFromFile(filename string) []string{
@@ -97,6 +130,7 @@ func extractQuestionsFromFile(filename string) []string{
 	}
 	return questions 
 }
+
 func main(){
 	fmt.Println("Listen on port")
 	ln, err := net.Listen("tcp", ":9000")
@@ -112,7 +146,6 @@ func main(){
 		trainSet,testSet := corpus.MakeClassesFromFile(corpusName)
 		c := classificator.TrainMultinomialNB(trainSet)
 		writeEncodedToFile(filename,c )
-		//fmt.Println(c)
 		classificator.TestClassifier(c,testSet)
 	}
 	c := loadTrainedClassificator(filename)

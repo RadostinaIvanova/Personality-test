@@ -47,9 +47,9 @@ func readCsvFile(filename string) [][]string{
 func divideIntoTrainTestSets(classes map [int] []string)(map [int] []string,map [int] []string){
 	testSet := make(map[int] []string)
 	trainSet := make(map[int] []string)
-	max := 200
+	max := 250
 		for class, docs:= range classes{
-			testCount := 50
+			testCount := 10
 			testSet[class] = docs[ :testCount]
 			trainSet[class] = docs[int(testCount):max] //700
 			}
@@ -68,23 +68,23 @@ func divideIntoClasses(records [][]string)map[int] []string{
 
 func encodeClassToInt(classType string) int{
 	switch classType{
-	case "INTJ": return 2
-	case "INTP" : return 0
-	case "ENTJ" : return 1
-	case "INFJ" : return 2
-	case "INFP" : return 0
-	case "ENFJ" : return 1
-	case "ENFP" : return 1 
-	case "ESFJ" : return 3
-	case "ISTP" : return 0
-	case "ISFP" : return 0
-	case "ESTP" : return 3
-	case "ESFP" : return 3
-	case "ENTP" : return 1
-	case "ISTJ" : return 2
-	case "ISFJ" : return 2
-	case "ESTJ" : return 3
-	}
+		case "INTJ": return 1
+		case "ISTJ" : return 2
+		case "ISFJ" : return 2
+		case "INFJ" : return 0
+		case "INTP" : return 1
+		case "INFP" : return 0
+		case "ISTP" : return 3
+		case "ISFP" : return 3
+		case "ENTJ" : return 1
+		case "ENFJ" : return 0
+		case "ENFP" : return 0
+		case "ENTP" : return 1	
+		case "ESFJ" : return 2
+		case "ESTP" : return 3
+		case "ESFP" : return 3	
+		case "ESTJ" : return 2
+		}
 	return 0
 }
 
@@ -95,14 +95,7 @@ func transformToLowerAndEraseDots(str string) string{
         log.Println(err.Error())
     }
 	newValue := reg.ReplaceAllString(str, "")
-	newValue = strings.ToLower(str)
-	// newValue = strings.Replace(newValue, ".", "", -1)
-	// newValue = strings.Replace(newValue, "|||", "", -1)
-	// newValue = strings.Replace(newValue, "[", "", -1)
-	// newValue = strings.Replace(newValue, "]", "", -1)
-	// newValue = strings.Replace(newValue, "!", "", -1)
-	// newValue = strings.Replace(newValue, "?", "", -1)
-	// newValue = strings.Replace(newValue, ",", "", -1)
+	newValue = strings.ToLower(newValue)
 	newValue = strings.Replace(newValue, "and", "", -1)
 	newValue = strings.Replace(newValue, "or", "", -1)
  return newValue
