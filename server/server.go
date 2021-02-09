@@ -169,7 +169,7 @@ func main(){
 	
 	questions := extractQuestionsFromFile(questionsDoc)
 	c := extractClassificator(classicatorFileName)
-	
+
 	for {
 		conn,err := ln.Accept()
 		if err!= nil{

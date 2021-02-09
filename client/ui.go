@@ -33,6 +33,7 @@ func textView(text string){
 	}
 }
 
+
 func setButton(app *tview.Application, button *tview.Button){
 	button.SetBorder(true).SetRect(0, 0, 50, 3)
 	button.SetBackgroundColorActivated(tcell.ColorDefault)

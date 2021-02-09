@@ -153,14 +153,14 @@ func TrainMultinomialNB(classes map[int] []string) NBclassificator{
 			for _, term := range terms{
 				 if  _, ok := vocabulary[term]; !ok {
 					for i := 0; i < numOfClasses; i++{
-					 vocabulary[term] = append(vocabulary[term], 0)
+					 	vocabulary[term] = append(vocabulary[term], 0)
 					}
 				 }
 				  vocabulary[term][class] +=1
 			}
 		}
 	}
- 
+	
 	return vocabulary
  }
  
@@ -187,7 +187,7 @@ func TrainMultinomialNB(classes map[int] []string) NBclassificator{
 	return confusionMatrix
  }
  
- //returns sum of the elements of the matrix
+ //returns sum of the elements of the matrix by given column(classInd)
  func sumMatrixValues(confussionMatrix [][]int, classInd int, numOfClasses int) int{
 	var sum int
 		for i := 0; i < numOfClasses; i++ { 
@@ -216,7 +216,6 @@ func TrainMultinomialNB(classes map[int] []string) NBclassificator{
  //returns the Precision, F-score and the recall of the classificator for each document of a test set of documents
  func calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){ 
 	
-   
 	precision := []float64{}
 	recall := []float64{}
 	fScore := []float64{}
