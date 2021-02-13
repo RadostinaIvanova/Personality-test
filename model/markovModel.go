@@ -32,13 +32,13 @@ type probWord struct{
 	value float64
 }
 
-func (m* MarkovModel) Init(k int, train [][]string){
+func (m* MarkovModel) Init(k int, train [][]string,limit int){
     kgrams := make([]Kgram,0, 100000)
     m.Tc = Tc{}
     m.Kgrams = kgrams
     m.K = k
     m.extractMonograms(train, 1)
-    m.extractKgrams(train,2,1000000)
+    m.extractKgrams(train,2,limit)
     m.calculateTc()
 }
 
@@ -196,14 +196,12 @@ func (mm *MarkovModel) getContext(sent []string, k int, i int) []string{
 func (mm *MarkovModel) calculateTc(){
     for _, kgram := range(mm.Kgrams){
         if _, ok := mm.Tc[kgram.context]; !ok {
-            mm.Tc[kgram.context] = 1
-        }else{
-				for _,value := range kgram.wordCount{
-       				mm.Tc[kgram.context] += value
-			}
+            mm.Tc[kgram.context] = 0
         }
+        for _,value := range kgram.wordCount{
+            mm.Tc[kgram.context] += value
+         }
     }
-
 }
 
 //CHANGED

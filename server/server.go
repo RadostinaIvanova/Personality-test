@@ -17,8 +17,9 @@ import(
 const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"
 const pathToDescriptions string = "D:\\FMI\\Info\\PersonalityTypes4\\" 
 const corpusName  string = "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
-const classicatorFileName string = "trainedClassificator"
+const classicatorFileName string = "D:\\FMI\\golang_workspace\\src\\golang-project\\server\\trainedClassificator"
 const dialoguesCorpus string = "D:\\FMI\\Info\\dialogues_train.txt"
+const modelFileName string = "D:\\FMI\\golang_workspace\\src\\golang-project\\server\\trainedModel"
 
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
@@ -42,17 +43,19 @@ func extractClassificator(filename string, corpusName string) classificator.NBcl
 	return c
 }
 
-func extractModel(filename string, dialoguesFile string) model.MarkovModel{
+func extractModel(filename string, dialoguesFile string, limit int) model.MarkovModel{
 	m := model.MarkovModel{}
 	if !exists(filename){
 		corpus := model.Extract(dialoguesFile)
 		fullCorpus := model.FullSentCorpus(corpus)
-		train, _ := model.DivideIntoTrainAndTest(0.1, fullSentCorpus)
+		train, _ := model.DivideIntoTrainAndTest(0.1, fullCorpus)
 		numGram := 2
-		m.Init(numGram,train)
-		m.SaveClassificator(filename)
+		m.Init(numGram,train,limit)
+		fmt.Println("here")
+		m.SaveModel(filename)
+	}else{ 
+		m.LoadModel(filename)
 	}
-	m = m.LoadClassificator(filename)
 	return m
 }
 
@@ -153,21 +156,21 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 }
 
 func main(){
-	fmt.Println("Listen on port")
-	ln, err := net.Listen("tcp", ":9000")
-	if err!= nil{
-		log.Println(err.Error())
-	}
+	// fmt.Println("Listen on port")
+	// ln, err := net.Listen("tcp", ":9000")
+	// if err!= nil{
+	// 	log.Println(err.Error())
+	// }
 	
-	questions := extractQuestionsFromFile(questionsDoc)
-	c := extractClassificator(classicatorFileName, corpusName)
+	// questions := extractQuestionsFromFile(questionsDoc)
+	// c := extractClassificator(classicatorFileName, corpusName)
 	m := extractModel(modelFileName, dialoguesCorpus)
-	fmt.Println(m.bestContinuation(["hello", "my", "friend"], 0.7, 7))
-	for {
-		conn,err := ln.Accept()
-		if err!= nil{
-			log.Println(err.Error())
-		}
-		go handleConnection(conn,questions,c)
-	}
+	fmt.Println(m.BestContinuation([]string{"hello", "my", "friend"}, 0.7, 7))
+	// for {
+	// 	conn,err := ln.Accept()
+	// 	if err!= nil{
+	// 		log.Println(err.Error())
+	// 	}
+	// 	go handleConnection(conn,questions,c)
+	// }
 }	
