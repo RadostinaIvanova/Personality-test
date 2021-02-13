@@ -18,7 +18,7 @@ const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"
 const pathToDescriptions string = "D:\\FMI\\Info\\PersonalityTypes4\\" 
 const corpusName  string = "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
 const classicatorFileName string = "trainedClassificator"
-const dialogues string = "D:\\FMI\\Info\\dialogues_train.txt"
+const dialoguesCorpus string = "D:\\FMI\\Info\\dialogues_train.txt"
 
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
@@ -161,7 +161,8 @@ func main(){
 	
 	questions := extractQuestionsFromFile(questionsDoc)
 	c := extractClassificator(classicatorFileName, corpusName)
-
+	m := extractModel(modelFileName, dialoguesCorpus)
+	fmt.Println(m.bestContinuation(["hello", "my", "friend"], 0.7, 7))
 	for {
 		conn,err := ln.Accept()
 		if err!= nil{

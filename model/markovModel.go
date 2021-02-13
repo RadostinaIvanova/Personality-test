@@ -65,7 +65,7 @@ func (m *MarkovModel) LoadModel(filename string){
 	}
 }
 
-func (mm *MarkovModel) bestContinuation(sentence []string, alpha float64, l int) []string{
+func (mm *MarkovModel) BestContinuation(sentence []string, alpha float64, l int) []string{
 	context := mm.getContext(sentence, mm.K, len(sentence))
 	con := strings.Join(context, " ")
 	candidates := []string{}

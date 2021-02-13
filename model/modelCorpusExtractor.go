@@ -8,6 +8,7 @@ import (
     "regexp"
     "log"
 )
+
 func FullSentCorpus(sentences []string) [][]string {
 	sentences = transform(sentences)
     result := [][]string{}
