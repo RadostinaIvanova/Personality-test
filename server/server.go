@@ -7,11 +7,10 @@ import(
 	"fmt"
 	"os"
 	"strconv"
-	 "encoding/gob"
 	 "strings"
 	"io/ioutil"
-	"github.com/RadostinaIvanova/golang-project/classificator"
-	"github.com/RadostinaIvanova/golang-project/corpus"
+	"github.com/RadostinaIvanova/Personality-test/classificator"
+	"github.com/RadostinaIvanova/Personality-test/corpus"
 	
 )
 
@@ -30,52 +29,18 @@ func extractInfo(option string, path string) string{
 	return text
 }
 
-func personalityTypes(pType int) string{
-	switch pType{
-		case 0:  return "Diplomat"
-		case 1:  return "Analyst"
-		case 2:  return "Sentinel"
-		case 3:  return "Explorer"
-	}
-	return "Diplomat"
-}
 
-func saveTrainedClassificator(filename string){
-	trainSet,_ := corpus.MakeClassesFromFile(corpusName)
-	c := classificator.TrainMultinomialNB(trainSet)
-	writeEncodedClassificatorToFile(filename,c )
-}
-func loadTrainedClassificator(filename string) classificator.NBclassificator{
-	f, err := os.Open(filename)
-	if err != nil{
-		log.Println(err.Error())
-	}
-	defer f.Close()
-
+func extractClassificator(filename string, corpusName string) classificator.NBclassificator {
 	c := classificator.NBclassificator{}
-	decoder := gob.NewDecoder(f)
-	errd := decoder.Decode(&c)	
-	if errd != nil {
-		log.Fatal("decode error 1:", errd)
-	}
-	return c
-}
-
-func extractClassificator(filename string) classificator.NBclassificator{
 	if !exists(filename){
-		saveTrainedClassificator(filename)
+		trainSet,_ := corpus.MakeClassesFromFile(corpusName)
+		c.TrainMultinomialNB(trainSet)
+		c.SaveClassificator(filename)
 	}
-	c := loadTrainedClassificator(filename)
+	else{ 
+		c.LoadClassificator(filename)
+	}
 	return c
-}
-func writeEncodedClassificatorToFile(filename string, c classificator.NBclassificator){
-	f, err := os.Create(filename)
-	if err != nil{
-		log.Println(err.Error())
-	}
-	defer f.Close()
-	encoder := gob.NewEncoder(f)
-	encoder.Encode(c)
 }
 
 // Exists reports whether the named file or directory exists.
@@ -88,8 +53,19 @@ func exists(name string) bool {
     return true
 }
 
+func personalityTypes(pType int) string{
+	switch pType{
+		case 0:  return "Diplomat"
+		case 1:  return "Analyst"
+		case 2:  return "Sentinel"
+		case 3:  return "Explorer"
+	}
+	return "Diplomat"
+}
+
+
 func classificate(answers string, c classificator.NBclassificator) string {
-	return personalityTypes(classificator.ApplyMultinomialNB(c,answers))
+	return personalityTypes(c.ApplyMultinomialNB(answers))
 }
 
 func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer) string{
@@ -114,7 +90,8 @@ func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter
 	for{
 		optionReceived, err2 := serverReader.ReadString('\n')
 		if err2!= nil{
-			log.Println(err2.Error())
+			fmt.Println("Unexpected disconnection")
+			break;
 		}
 		optionReceived = strings.TrimSuffix(optionReceived, "\n")
 		if optionReceived == "Quit"{
@@ -130,20 +107,7 @@ func sendType(pType string, serverReader bufio.Reader, serverWriter bufio.Writer
 	serverWriter.WriteString(pType + "\n");
 	serverWriter.Flush();
 }
-func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
-	//fmt.Println("Inside handle connection func")
-	defer conn.Close()
-	serverWriter := bufio.NewWriterSize(conn,5000)
-	serverReader := bufio.NewReaderSize(conn,5000)
 
-	answers := quiz(questions, *serverReader, *serverWriter)
-	pType := classificate(answers,c)
-	sendType(pType, *serverReader, *serverWriter)
-
-	documentsPath := pathToDescriptions + pType + "\\"
-	optionHandler(documentsPath,*serverReader, *serverWriter)
-	
-}
 
 func extractQuestionsFromFile(filename string) []string{
 	questions := []string{}
@@ -159,6 +123,21 @@ func extractQuestionsFromFile(filename string) []string{
 	return questions 
 }
 
+func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
+	//fmt.Println("Inside handle connection func")
+	defer conn.Close()
+	serverWriter := bufio.NewWriterSize(conn,5000)
+	serverReader := bufio.NewReaderSize(conn,5000)
+
+	answers := quiz(questions, *serverReader, *serverWriter)
+	pType := classificate(answers,c)
+	sendType(pType, *serverReader, *serverWriter)
+
+	documentsPath := pathToDescriptions + pType + "\\"
+	optionHandler(documentsPath,*serverReader, *serverWriter)
+	
+}
+
 func main(){
 	fmt.Println("Listen on port")
 	ln, err := net.Listen("tcp", ":9000")
@@ -167,7 +146,7 @@ func main(){
 	}
 	
 	questions := extractQuestionsFromFile(questionsDoc)
-	c := extractClassificator(classicatorFileName)
+	c := extractClassificator(classicatorFileName, corpusName)
 
 	for {
 		conn,err := ln.Accept()

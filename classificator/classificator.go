@@ -4,6 +4,9 @@ import (
 	 "strings"
 	 "math"
 	 "fmt"
+	 "os"
+	 "log"
+	 "encoding/gob"
 )
 
 type NBclassificator struct{
@@ -59,6 +62,34 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	fmt.Println("Общ Обхват: ", recallOverall)
 	fmt.Println("Обща F-score: ", fScoreOverall)
  }
+
+// func (c *NBclassificator) saveClassificator(filename string){
+// 	c.writeEncodedClassificatorToFile(filename)
+// }
+
+func (c *NBclassificator) LoadClassificator(filename string){
+	f, err := os.Open(filename)
+	if err != nil{
+		log.Println(err.Error())
+	}
+	defer f.Close()
+	decoder := gob.NewDecoder(f)
+	errd := decoder.Decode(&c)	
+	if errd != nil {
+		log.Fatal("decode error 1:", errd)
+	}
+}
+
+func (c *NBclassificator) SaveClassificator(filename string){
+	f, err := os.Create(filename)
+	if err != nil{
+		log.Println(err.Error())
+	}
+	defer f.Close()
+	encoder := gob.NewEncoder(f)
+	encoder.Encode(c)
+}
+
 
  //returns number of all docs in all classes
  func (c *NBclassificator) calNumAllDocs(classes map[int] []string) int{
