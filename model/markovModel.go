@@ -1,14 +1,9 @@
 package main
 
-
 import (
     "math"
-    "os"
     "fmt"
-    "bufio"
     "strings"
-    "regexp"
-    "log"
 	"sort"
 )
 const startToken = "<START>"
@@ -55,7 +50,6 @@ func (mm *MarkovModel) extractMonograms(corpus [][]string,  limit int){
 }
 
 
-//changed
 func (mm *MarkovModel) probMLE(word string ,con string) float64{
     ind := mm.existInKgrams(con,word);
 	if ind == -1 {
@@ -65,7 +59,6 @@ func (mm *MarkovModel) probMLE(word string ,con string) float64{
 }
 
 
-//changed
 func (mm *MarkovModel) prob(word string, context[] string, alpha float64) float64{
 	con := strings.Join(context, " ")
     if con != "" {
@@ -75,7 +68,6 @@ func (mm *MarkovModel) prob(word string, context[] string, alpha float64) float6
 }
 
 
-//hardcoded 2 because only 1 contex word
 func (mm *MarkovModel) sentenceLogProbability(sentence []string, alpha float64) float64{
     sum := 0.0
     for key,value :=  range(sentence){
@@ -143,9 +135,7 @@ func (mm *MarkovModel) getContext(sent []string, k int, i int) []string{
 }
 
 
-//changed
 func (mm *MarkovModel) calculateTc(){
-
     for _, kgram := range(mm.kgrams){
         if _, ok := mm.tc[kgram.context]; !ok {
             mm.tc[kgram.context] = 1
@@ -214,74 +204,18 @@ func (mm *MarkovModel) bestContinuation(sentence []string, alpha float64, l int)
 }
 
 
-func extract(filename string) []string{
-    f, err := os.Open(filename)
-    if err != nil{
-        fmt.Println("could't open file")
-    }
-    defer f.Close()
-
-    reg, err := regexp.Compile("[^a-zA-Z0-9_\\s]+")
-    if err != nil {
-        log.Println(err.Error())
-    }
-    limit := 5
-    i := 0
-    scanner := bufio.NewScanner(f)
-    corpus := []string{}
-    for ;i < limit; {
-	    for scanner.Scan(){
-            text :=  reg.ReplaceAllString(scanner.Text(), "")
-	        corpus = append(corpus, text)
-        } 
-        i++
-        }
-    return corpus
-}
-
-func transform(text []string) []string{
-    sentences := []string{}
-    for _,paragraph := range text{
-         sentences = append(sentences,strings.Split(paragraph, "__eou__")...)
-    }
-   return sentences
-}
-
-func fullSentCorpus(sentences []string) [][]string {
-    result := [][]string{}
-    for _,value := range sentences{
-        sentSplit := []string{}
-        sentSplit =  append(sentSplit, startToken)
-        value = strings.Trim(value, " ")
-		value = strings.ToLower(value) 
-        sentSplit =  append(sentSplit, strings.Split(value, " ")...)
-        sentSplit = delete_empty(sentSplit)
-        sentSplit = append(sentSplit, endToken)
-        result = append(result,sentSplit)
-    }
-    return result
-}
-
-func delete_empty (s []string) []string {
-    var r []string
-    for _, str := range s {
-        if str != "" {
-            r = append(r, str)
-        }
-    }
-    return r
-}
 func main(){
     a := extract("D:\\FMI\\Info\\dialogues_train.txt")
     sentences := (transform(a))
     fullSentCorpus := fullSentCorpus(sentences)
     percent := int(0.1*float64(len(fullSentCorpus)))
     train := fullSentCorpus[percent:]
-    kgrams := make([]Kgram,0, 4025000)
+    kgrams := make([]Kgram,0, 402500)
     tc := Tc{}
     mm := MarkovModel{2, kgrams, tc}
     mm.extractMonograms(train, 1)
     mm.extractKgrams(train,2,1000000)
     mm.calculateTc()
+    fmt.Println("Here")
 	fmt.Println(mm.bestContinuation([]string{"<START>", "start", "car","engine"}, 0.6,5))
 }

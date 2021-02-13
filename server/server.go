@@ -9,7 +9,6 @@ import(
 	"strconv"
 	 "encoding/gob"
 	 "strings"
-	//"errors"
 	"io/ioutil"
 	"github.com/RadostinaIvanova/golang-project/classificator"
 	"github.com/RadostinaIvanova/golang-project/corpus"
