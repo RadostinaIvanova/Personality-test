@@ -11,6 +11,7 @@ import(
 	"io/ioutil"
 	"github.com/RadostinaIvanova/Personality-test/classificator"
 	"github.com/RadostinaIvanova/Personality-test/corpus"
+	"github.com/RadostinaIvanova/Personality-test/model"
 )
 
 const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"

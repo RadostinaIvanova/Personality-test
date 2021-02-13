@@ -1,10 +1,10 @@
-package main
+package model
 
 import (
     "math"
     "fmt"
     "strings"
-	"sort"
+    "sort"
     "os"
     "log"
     "encoding/gob"
@@ -240,12 +240,12 @@ func (mm *MarkovModel) countContext(context string)[]string{
 }
 
 
-func main(){
-    sentences := extract("D:\\FMI\\Info\\dialogues_train.txt")
-    fullSentCorpus := FullSentCorpus(sentences)
-    train, _ := divideIntoTrainAndTest(0.1, fullSentCorpus)
-    numGram := 2
-    m := MarkovModel{}
-    m.Init(numGram,train)
-	fmt.Println(m.bestContinuation([]string{"<START>", "start", "car","engine"}, 0.6,5))
-}
+// func main(){
+//     sentences := extract("D:\\FMI\\Info\\dialogues_train.txt")
+//     fullSentCorpus := FullSentCorpus(sentences)
+//     train, _ := divideIntoTrainAndTest(0.1, fullSentCorpus)
+//     numGram := 2
+//     m := MarkovModel{}
+//     m.Init(numGram,train)
+// 	fmt.Println(m.bestContinuation([]string{"<START>", "start", "car","engine"}, 0.6,5))
+// }
