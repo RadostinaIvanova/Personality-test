@@ -8,6 +8,21 @@ import (
     "regexp"
     "log"
 )
+func FullSentCorpus(sentences []string) [][]string {
+	sentences = transform(sentences)
+    result := [][]string{}
+    for _,value := range sentences{
+        sentSplit := []string{}
+        sentSplit =  append(sentSplit, startToken)
+        value = strings.Trim(value, " ")
+		value = strings.ToLower(value) 
+        sentSplit =  append(sentSplit, strings.Split(value, " ")...)
+        sentSplit = delete_empty(sentSplit)
+        sentSplit = append(sentSplit, endToken)
+        result = append(result,sentSplit)
+    }
+    return result
+}
 
 func extract(filename string) []string{
     f, err := os.Open(filename)
@@ -42,21 +57,6 @@ func transform(text []string) []string{
    return sentences
 }
 
-func fullSentCorpus(sentences []string) [][]string {
-    result := [][]string{}
-    for _,value := range sentences{
-        sentSplit := []string{}
-        sentSplit =  append(sentSplit, startToken)
-        value = strings.Trim(value, " ")
-		value = strings.ToLower(value) 
-        sentSplit =  append(sentSplit, strings.Split(value, " ")...)
-        sentSplit = delete_empty(sentSplit)
-        sentSplit = append(sentSplit, endToken)
-        result = append(result,sentSplit)
-    }
-    return result
-}
-
 func delete_empty (s []string) []string {
     var r []string
     for _, str := range s {
@@ -65,4 +65,11 @@ func delete_empty (s []string) []string {
         }
     }
     return r
+}
+
+func divideIntoTrainAndTest(percent float64, fullSentCorpus [][]string)([][]string,[][]string){
+	portion := int(percent*float64(len(fullSentCorpus)))
+	test := fullSentCorpus[:portion]
+	train := fullSentCorpus[portion:]
+	return train,test
 }

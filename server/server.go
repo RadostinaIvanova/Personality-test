@@ -7,11 +7,10 @@ import(
 	"fmt"
 	"os"
 	"strconv"
-	 "strings"
+	"strings"
 	"io/ioutil"
 	"github.com/RadostinaIvanova/Personality-test/classificator"
 	"github.com/RadostinaIvanova/Personality-test/corpus"
-	
 )
 
 const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"
@@ -29,15 +28,13 @@ func extractInfo(option string, path string) string{
 	return text
 }
 
-
 func extractClassificator(filename string, corpusName string) classificator.NBclassificator {
 	c := classificator.NBclassificator{}
 	if !exists(filename){
 		trainSet,_ := corpus.MakeClassesFromFile(corpusName)
 		c.TrainMultinomialNB(trainSet)
 		c.SaveClassificator(filename)
-	}
-	else{ 
+	}else{ 
 		c.LoadClassificator(filename)
 	}
 	return c
@@ -86,6 +83,27 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 	return answers
 }
 
+
+func sendType(pType string, serverReader bufio.Reader, serverWriter bufio.Writer){
+	serverWriter.WriteString(pType + "\n");
+	serverWriter.Flush();
+}
+
+func extractQuestionsFromFile(filename string) []string{
+	questions := []string{}
+	f , errf := os.Open(filename)
+	if errf!= nil{
+		log.Println(errf.Error())
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan(){
+		questions = append(questions, scanner.Text())
+	}
+	return questions 
+}
+
+
 func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter bufio.Writer){
 	for{
 		optionReceived, err2 := serverReader.ReadString('\n')
@@ -101,26 +119,6 @@ func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter
 		serverWriter.WriteString(str + "\n");
 		serverWriter.Flush();
 	}
-}
-
-func sendType(pType string, serverReader bufio.Reader, serverWriter bufio.Writer){
-	serverWriter.WriteString(pType + "\n");
-	serverWriter.Flush();
-}
-
-
-func extractQuestionsFromFile(filename string) []string{
-	questions := []string{}
-	f , errf := os.Open(filename)
-	if errf!= nil{
-		log.Println(errf.Error())
-	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan(){
-		questions = append(questions, scanner.Text())
-	}
-	return questions 
 }
 
 func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){

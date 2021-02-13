@@ -63,10 +63,6 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	fmt.Println("Обща F-score: ", fScoreOverall)
  }
 
-// func (c *NBclassificator) saveClassificator(filename string){
-// 	c.writeEncodedClassificatorToFile(filename)
-// }
-
 func (c *NBclassificator) LoadClassificator(filename string){
 	f, err := os.Open(filename)
 	if err != nil{
