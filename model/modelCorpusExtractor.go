@@ -24,7 +24,7 @@ func FullSentCorpus(sentences []string) [][]string {
     return result
 }
 
-func extract(filename string) []string{
+func Extract(filename string) []string{
     f, err := os.Open(filename)
     if err != nil{
         fmt.Println("could't open file")
@@ -67,7 +67,7 @@ func delete_empty (s []string) []string {
     return r
 }
 
-func divideIntoTrainAndTest(percent float64, fullSentCorpus [][]string)([][]string,[][]string){
+func DivideIntoTrainAndTest(percent float64, fullSentCorpus [][]string)([][]string,[][]string){
 	portion := int(percent*float64(len(fullSentCorpus)))
 	test := fullSentCorpus[:portion]
 	train := fullSentCorpus[portion:]

@@ -18,6 +18,7 @@ const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"
 const pathToDescriptions string = "D:\\FMI\\Info\\PersonalityTypes4\\" 
 const corpusName  string = "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
 const classicatorFileName string = "trainedClassificator"
+const dialogues string = "D:\\FMI\\Info\\dialogues_train.txt"
 
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
@@ -39,6 +40,20 @@ func extractClassificator(filename string, corpusName string) classificator.NBcl
 		c.LoadClassificator(filename)
 	}
 	return c
+}
+
+func extractModel(filename string, dialoguesFile string) model.MarkovModel{
+	m := model.MarkovModel{}
+	if !exists(filename){
+		corpus := model.Extract(dialoguesFile)
+		fullCorpus := model.FullSentCorpus(corpus)
+		train, _ := model.DivideIntoTrainAndTest(0.1, fullSentCorpus)
+		numGram := 2
+		m.Init(numGram,train)
+		m.SaveClassificator(filename)
+	}
+	m = m.LoadClassificator(filename)
+	return m
 }
 
 // Exists reports whether the named file or directory exists.
