@@ -2,7 +2,6 @@ package model
 
 import (
     "math"
-    "fmt"
     "strings"
     "sort"
     "os"
@@ -37,8 +36,9 @@ func (m* MarkovModel) Init(k int, train [][]string,limit int){
     m.Tc = Tc{}
     m.Kgrams = kgrams
     m.K = k
-    m.extractMonograms(train, 1)
-    m.extractKgrams(train,2,limit)
+    for i := 0;i <= m.K; i++{
+        m.extractKgrams(train,i,limit)
+    }
     m.calculateTc()
 }
 
@@ -49,7 +49,11 @@ func (m *MarkovModel) SaveModel(filename string){
 	}
 	defer f.Close()
 	encoder := gob.NewEncoder(f)
-	encoder.Encode(m)
+
+	errEn :=encoder.Encode(m)
+    if errEn != nil {
+		log.Fatal("encode error:", err)
+	}
 }
 
 func (m *MarkovModel) LoadModel(filename string){
@@ -67,12 +71,10 @@ func (m *MarkovModel) LoadModel(filename string){
 
 func (mm *MarkovModel) BestContinuation(sentence []string, alpha float64, l int) []string{
 	context := mm.getContext(sentence, mm.K, len(sentence))
-	con := strings.Join(context, " ")
 	candidates := []string{}
 	for k := 0;k < mm.K;k++{
-		can := mm.countContext(con)
-		if ind := mm.contextInKgrams(strings.Join(context[k:], " ")); ind > -1 && len(can) > l{
-			candidates = can
+		if ind := mm.existContext(strings.Join(context[k:], " ")); ind > -1 && len(mm.countContext(strings.Join(context[k:], " "))) > l{
+            candidates = mm.countContext(strings.Join(context[k:], " "))
 			break
 		}
 	}
@@ -83,9 +85,11 @@ func (mm *MarkovModel) BestContinuation(sentence []string, alpha float64, l int)
 	}
 	sort.SliceStable(wProb, func(i, j int) bool {return wProb[i].value > wProb[j].value})
 	for _ ,wordProb  := range wProb{
+        if wordProb.word != endToken{
 		result = append(result, wordProb.word)
+        }
 	}
-	return result
+	return result[:l]
 }
 
 func (mm *MarkovModel) extractMonograms(corpus [][]string,  limit int){
@@ -101,12 +105,13 @@ func (mm *MarkovModel) extractMonograms(corpus [][]string,  limit int){
             	dictionary[word] += 1
 		}
     }
-    monograms := []Kgram{}
+    monograms := Kgram{"", map[string]int{}}
     for k,v := range dictionary {
-        monograms = append(monograms, Kgram{"", map[string]int{k:v,}})
+        monograms.wordCount[k] = v
     }
-    mm.Kgrams = append(mm.Kgrams, monograms...)
+    mm.Kgrams = append(mm.Kgrams, monograms)
 }
+
 
 
 func (mm *MarkovModel) extractKgrams(corpus [][]string, k int,limit int){
@@ -116,16 +121,16 @@ func (mm *MarkovModel) extractKgrams(corpus [][]string, k int,limit int){
             if (word == startToken){
                 continue
             }
-            context := strings.Join(mm.getContext(sent,  2, i), " ")
+            context := strings.Join(mm.getContext(sent, mm.K, i), " ")
             
-            if ind := mm.existInKgrams(context, word); ind >= 0{
-                if context == ""{
-                    fmt.Println(mm.Kgrams[ind].wordCount[word])
-                }
+            if ind := mm.existContext(context); ind >= 0{
+                 if _, ok := mm.Kgrams[ind].wordCount[word]; !ok{
+                    mm.Kgrams[ind].wordCount[word] = 0
+                 }
                     mm.Kgrams[ind].wordCount[word] += 1
-            }else{
+           }else{
                 mm.Kgrams = append(mm.Kgrams, Kgram{context, map[string] int{word : 1,}})
-            }
+           }
             j++
             if(j == limit){
                 return
@@ -195,9 +200,7 @@ func (mm *MarkovModel) getContext(sent []string, k int, i int) []string{
 
 func (mm *MarkovModel) calculateTc(){
     for _, kgram := range(mm.Kgrams){
-        if _, ok := mm.Tc[kgram.context]; !ok {
             mm.Tc[kgram.context] = 0
-        }
         for _,value := range kgram.wordCount{
             mm.Tc[kgram.context] += value
          }
@@ -206,44 +209,43 @@ func (mm *MarkovModel) calculateTc(){
 
 //CHANGED
 func (mm *MarkovModel) existInKgrams(context string, word string) int{
-    for ind , kgram := range mm.Kgrams{	
-        if kgram.context == context {
+    if ind:= mm.existContext(context); ind >= 0{
 			if _, ok := mm.Kgrams[ind].wordCount[word];ok{
                 return ind
 			}
 		}
-	}
     return -1
 }
 
-func (mm *MarkovModel) contextInKgrams(context string) int{
+func (mm *MarkovModel) existContext(context string) int{
     for ind , kgram := range mm.Kgrams{	
         if kgram.context == context {
-                return ind
-			}
-		}
+            return ind
+        }
+    }
     return -1
 }
 
 func (mm *MarkovModel) countContext(context string)[]string{
 	candidates := []string{}
-	for _, kgram := range(mm.Kgrams){
-		if kgram.context == context{
-			for key,_ := range kgram.wordCount{
-			candidates = append(candidates, key)
-			}
+	if ind := mm.existContext(context); ind > -1{
+		for key,_ := range mm.Kgrams[ind].wordCount{
+		    candidates = append(candidates, key)
 		}
-	}
+    }
 	return candidates
 }
 
 
 // func main(){
-//     sentences := extract("D:\\FMI\\Info\\dialogues_train.txt")
+//     sentences := Extract("D:\\FMI\\Info\\dialogues_train.txt")
 //     fullSentCorpus := FullSentCorpus(sentences)
-//     train, _ := divideIntoTrainAndTest(0.1, fullSentCorpus)
+//     train, test := DivideIntoTrainAndTest(0.1, fullSentCorpus)
 //     numGram := 2
 //     m := MarkovModel{}
-//     m.Init(numGram,train)
-// 	fmt.Println(m.bestContinuation([]string{"<START>", "start", "car","engine"}, 0.6,5))
+//     m.Init(numGram,train,4000000)
+//     fmt.Println(m.perplexity(test,0.6))
+//     fmt.Println(len(m.Kgrams))
+// 	fmt.Println(m.BestContinuation([]string{"<START>", "i", "love", "going"}, 0.6,10))
+//     fmt.Println(m.BestContinuation([]string{"<START>", "Watch", "me", "turn", "into"}, 0.6,10))
 // }

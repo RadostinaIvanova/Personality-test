@@ -164,8 +164,8 @@ func main(){
 	
 	// questions := extractQuestionsFromFile(questionsDoc)
 	// c := extractClassificator(classicatorFileName, corpusName)
-	m := extractModel(modelFileName, dialoguesCorpus)
-	fmt.Println(m.BestContinuation([]string{"hello", "my", "friend"}, 0.7, 7))
+	m := extractModel(modelFileName, dialoguesCorpus,400000)
+	fmt.Println(m.BestContinuation([]string{"play", "games"}, 0.7, 15))
 	// for {
 	// 	conn,err := ln.Accept()
 	// 	if err!= nil{
