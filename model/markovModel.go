@@ -7,6 +7,7 @@ import (
     "os"
     "log"
     "encoding/gob"
+    "fmt"
 )
 const startToken = "<START>"
 const endToken = "<END>"
@@ -20,8 +21,8 @@ type MarkovModel struct{
 }
 
 type Kgram struct{
-    context string
-    wordCount map[string] int
+    Context string
+    WordCount map[string] int
 }
 
 type Tc map[string] int
@@ -49,7 +50,9 @@ func (m *MarkovModel) SaveModel(filename string){
 	}
 	defer f.Close()
 	encoder := gob.NewEncoder(f)
-
+    fmt.Println(len(m.Kgrams))
+    fmt.Println(m.K)
+    fmt.Println(len(m.Tc))
 	errEn :=encoder.Encode(m)
     if errEn != nil {
 		log.Fatal("encode error:", err)
@@ -107,7 +110,7 @@ func (mm *MarkovModel) extractMonograms(corpus [][]string,  limit int){
     }
     monograms := Kgram{"", map[string]int{}}
     for k,v := range dictionary {
-        monograms.wordCount[k] = v
+        monograms.WordCount[k] = v
     }
     mm.Kgrams = append(mm.Kgrams, monograms)
 }
@@ -124,10 +127,10 @@ func (mm *MarkovModel) extractKgrams(corpus [][]string, k int,limit int){
             context := strings.Join(mm.getContext(sent, mm.K, i), " ")
             
             if ind := mm.existContext(context); ind >= 0{
-                 if _, ok := mm.Kgrams[ind].wordCount[word]; !ok{
-                    mm.Kgrams[ind].wordCount[word] = 0
+                 if _, ok := mm.Kgrams[ind].WordCount[word]; !ok{
+                    mm.Kgrams[ind].WordCount[word] = 0
                  }
-                    mm.Kgrams[ind].wordCount[word] += 1
+                    mm.Kgrams[ind].WordCount[word] += 1
            }else{
                 mm.Kgrams = append(mm.Kgrams, Kgram{context, map[string] int{word : 1,}})
            }
@@ -144,7 +147,7 @@ func (mm *MarkovModel) probMLE(word string ,con string) float64{
 	if ind == -1 {
         return 0.0
     }
-	return float64(mm.Kgrams[ind].wordCount[word])/float64(mm.Tc[con])
+	return float64(mm.Kgrams[ind].WordCount[word])/float64(mm.Tc[con])
 }
 
 
@@ -200,9 +203,9 @@ func (mm *MarkovModel) getContext(sent []string, k int, i int) []string{
 
 func (mm *MarkovModel) calculateTc(){
     for _, kgram := range(mm.Kgrams){
-            mm.Tc[kgram.context] = 0
-        for _,value := range kgram.wordCount{
-            mm.Tc[kgram.context] += value
+            mm.Tc[kgram.Context] = 0
+        for _,value := range kgram.WordCount{
+            mm.Tc[kgram.Context] += value
          }
     }
 }
@@ -210,7 +213,7 @@ func (mm *MarkovModel) calculateTc(){
 //CHANGED
 func (mm *MarkovModel) existInKgrams(context string, word string) int{
     if ind:= mm.existContext(context); ind >= 0{
-			if _, ok := mm.Kgrams[ind].wordCount[word];ok{
+			if _, ok := mm.Kgrams[ind].WordCount[word];ok{
                 return ind
 			}
 		}
@@ -219,7 +222,7 @@ func (mm *MarkovModel) existInKgrams(context string, word string) int{
 
 func (mm *MarkovModel) existContext(context string) int{
     for ind , kgram := range mm.Kgrams{	
-        if kgram.context == context {
+        if kgram.Context == context {
             return ind
         }
     }
@@ -229,7 +232,7 @@ func (mm *MarkovModel) existContext(context string) int{
 func (mm *MarkovModel) countContext(context string)[]string{
 	candidates := []string{}
 	if ind := mm.existContext(context); ind > -1{
-		for key,_ := range mm.Kgrams[ind].wordCount{
+		for key,_ := range mm.Kgrams[ind].WordCount{
 		    candidates = append(candidates, key)
 		}
     }
