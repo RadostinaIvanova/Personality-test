@@ -13,19 +13,21 @@ import(
 	"github.com/RadostinaIvanova/Personality-test/model"
 )
 
-const questionsDoc string = "C://Users//Radi//Downloads//questions.txt"
-const pathToDescriptions string = "D:\\FMI\\Info\\PersonalityTypes4\\" 
-const corpusName  string = "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
+const questionsDoc string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\questions.txt"
+const pathToDescriptions string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\PersonalityTypes4\\" 
+const corpusName  string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\mbt.csv"
+const dialoguesCorpus string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\dialogues_train.txt"
 const classicatorFileName string = "D:\\FMI\\golang_workspace\\src\\golang-project\\server\\trainedClassificator"
-const dialoguesCorpus string = "D:\\FMI\\Info\\dialogues_train.txt"
 const modelFileName string = "D:\\FMI\\golang_workspace\\src\\golang-project\\server\\trainedModel"
-const expanding int = 3
+const expanding int = 2
+
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
 	buff, err := ioutil.ReadFile(filename)
 	if err != nil {
         fmt.Print(err)
     }
+
 	text := string(buff)
 	return text
 }
@@ -75,7 +77,7 @@ func personalityTypes(pType int) string{
 		case 2:  return "Sentinel"
 		case 3:  return "Explorer"
 	}
-	return "Diplomat"
+	return "Analyst"
 }
 
 
@@ -156,6 +158,7 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 	sendType(pType, *serverReader, *serverWriter)
 
 	documentsPath := pathToDescriptions + pType + "\\"
+	fmt.Println(documentsPath)
 	optionHandler(documentsPath,*serverReader, *serverWriter)
 	
 }

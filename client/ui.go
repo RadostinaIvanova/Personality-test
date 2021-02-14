@@ -55,7 +55,7 @@ func options(clientReader bufio.Reader, clientWriter bufio.Writer){
 	list := tview.NewList()
 	des := "Description"
 	work := "Work"
-	soc := "Socialskills"
+	soc := "SocialSkills"
 	rom := "RomanticRelationships"
 	list.AddItem(des, "", 'a', func(){  app.Stop()  
 		receiveInfo(des,clientReader,clientWriter) 
@@ -115,6 +115,7 @@ func receiveInfo(option string, clientReader bufio.Reader, clientWriter bufio.Wr
 	if err2!= nil{
 		log.Println(err2.Error())
 	}
+	fmt.Println(info)
 	textView(info)
 	options(clientReader,clientWriter)
 }
