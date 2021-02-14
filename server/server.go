@@ -10,7 +10,6 @@ import(
 	"strings"
 	"io/ioutil"
 	"github.com/RadostinaIvanova/Personality-test/classificator"
-	"github.com/RadostinaIvanova/Personality-test/corpus"
 	"github.com/RadostinaIvanova/Personality-test/model"
 )
 
@@ -34,7 +33,7 @@ func extractInfo(option string, path string) string{
 func extractClassificator(filename string, corpusName string) classificator.NBclassificator {
 	c := classificator.NBclassificator{}
 	if !exists(filename){
-		trainSet,_ := corpus.MakeClassesFromFile(corpusName)
+		trainSet,_ := classificator.MakeClassesFromFile(corpusName)
 		c.TrainMultinomialNB(trainSet)
 		c.SaveClassificator(filename)
 	}else{ 

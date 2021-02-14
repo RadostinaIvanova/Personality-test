@@ -1,4 +1,4 @@
-package corpus
+package classificator
 
 import(
 	"encoding/csv"
