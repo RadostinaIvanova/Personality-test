@@ -75,24 +75,29 @@ func (m *MarkovModel) LoadModel(filename string){
 func (mm *MarkovModel) BestContinuation(sentence []string, alpha float64, l int) []string{
 	context := mm.getContext(sentence, mm.K, len(sentence))
 	candidates := []string{}
+    check := false
 	for k := 0;k < mm.K;k++{
 		if ind := mm.existContext(strings.Join(context[k:], " ")); ind > -1 && len(mm.countContext(strings.Join(context[k:], " "))) > l{
             candidates = mm.countContext(strings.Join(context[k:], " "))
+            check = true
 			break
 		}
 	}
-	wProb := []probWord{}
-	result := []string{}
-	for _,word := range(candidates){
-		wProb = append(wProb, probWord{word, mm.prob(word,context,alpha)})
-	}
-	sort.SliceStable(wProb, func(i, j int) bool {return wProb[i].value > wProb[j].value})
-	for _ ,wordProb  := range wProb{
-        if wordProb.word != endToken{
-		result = append(result, wordProb.word)
+    if check == true{
+        wProb := []probWord{}
+        result := []string{}
+        for _,word := range(candidates){
+            wProb = append(wProb, probWord{word, mm.prob(word,context,alpha)})
         }
-	}
-	return result[:l]
+        sort.SliceStable(wProb, func(i, j int) bool {return wProb[i].value > wProb[j].value})
+        for _ ,wordProb  := range wProb{
+            if wordProb.word != endToken{
+            result = append(result, wordProb.word)
+            }
+        }
+        return result[:l]
+    }
+	return []string{}
 }
 
 func (mm *MarkovModel) extractMonograms(corpus [][]string,  limit int){

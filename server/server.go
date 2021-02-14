@@ -20,7 +20,7 @@ const corpusName  string = "D:\\FMI\\golang_workspace\\src\\mbt\\mbt.csv"
 const classicatorFileName string = "D:\\FMI\\golang_workspace\\src\\golang-project\\server\\trainedClassificator"
 const dialoguesCorpus string = "D:\\FMI\\Info\\dialogues_train.txt"
 const modelFileName string = "D:\\FMI\\golang_workspace\\src\\golang-project\\server\\trainedModel"
-
+const expanding int = 3
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
 	buff, err := ioutil.ReadFile(filename)
@@ -84,7 +84,7 @@ func classificate(answers string, c classificator.NBclassificator) string {
 	return personalityTypes(c.ApplyMultinomialNB(answers))
 }
 
-func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer) string{
+func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer, m model.MarkovModel) string{
 	var answers string = ""
 	serverWriter.WriteString(strconv.Itoa(len(questions)) + "\n")
 	serverWriter.Flush()
@@ -96,6 +96,12 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 			log.Println(err2.Error())
 		}
 		messageReceived = strings.TrimSuffix(messageReceived, "\n")
+		if len(m.BestContinuation(strings.Split(messageReceived, " "),0.6, expanding)) <= expanding{
+			addContext := strings.Join(m.BestContinuation(strings.Split(messageReceived, " "),0.6, 3), " ")
+			answers += " "
+			messageReceived += addContext
+		}
+		
 		answers += " "
 		answers += messageReceived
 	}
@@ -140,13 +146,13 @@ func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter
 	}
 }
 
-func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator){
+func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator,m model.MarkovModel){
 	//fmt.Println("Inside handle connection func")
 	defer conn.Close()
 	serverWriter := bufio.NewWriterSize(conn,5000)
 	serverReader := bufio.NewReaderSize(conn,5000)
 
-	answers := quiz(questions, *serverReader, *serverWriter)
+	answers := quiz(questions, *serverReader, *serverWriter, m)
 	pType := classificate(answers,c)
 	sendType(pType, *serverReader, *serverWriter)
 
@@ -156,21 +162,21 @@ func handleConnection(conn net.Conn, questions []string, c classificator.NBclass
 }
 
 func main(){
-	// fmt.Println("Listen on port")
-	// ln, err := net.Listen("tcp", ":9000")
-	// if err!= nil{
-	// 	log.Println(err.Error())
-	// }
+	fmt.Println("Listen on port")
+	ln, err := net.Listen("tcp", ":9000")
+	if err!= nil{
+		log.Println(err.Error())
+	}
 	
-	// questions := extractQuestionsFromFile(questionsDoc)
-	// c := extractClassificator(classicatorFileName, corpusName)
+	questions := extractQuestionsFromFile(questionsDoc)
+	c := extractClassificator(classicatorFileName, corpusName)
 	m := extractModel(modelFileName, dialoguesCorpus,400000)
-	fmt.Println(m.BestContinuation([]string{"play", "games"}, 0.7, 15))
-	// for {
-	// 	conn,err := ln.Accept()
-	// 	if err!= nil{
-	// 		log.Println(err.Error())
-	// 	}
-	// 	go handleConnection(conn,questions,c)
-	// }
+	
+	for {
+		conn,err := ln.Accept()
+		if err!= nil{
+			log.Println(err.Error())
+		}
+		go handleConnection(conn,questions,c,m)
+	}
 }	
