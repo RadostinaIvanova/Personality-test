@@ -243,17 +243,3 @@ func (mm *MarkovModel) countContext(context string)[]string{
     }
 	return candidates
 }
-
-
-// func main(){
-//     sentences := Extract("D:\\FMI\\Info\\dialogues_train.txt")
-//     fullSentCorpus := FullSentCorpus(sentences)
-//     train, test := DivideIntoTrainAndTest(0.1, fullSentCorpus)
-//     numGram := 2
-//     m := MarkovModel{}
-//     m.Init(numGram,train,4000000)
-//     fmt.Println(m.perplexity(test,0.6))
-//     fmt.Println(len(m.Kgrams))
-// 	fmt.Println(m.BestContinuation([]string{"<START>", "i", "love", "going"}, 0.6,10))
-//     fmt.Println(m.BestContinuation([]string{"<START>", "Watch", "me", "turn", "into"}, 0.6,10))
-// }
