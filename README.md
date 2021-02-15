@@ -19,6 +19,7 @@ The Markov Model is implemented With Jelinek-Mercer interpolated smoothing:
     
 ## Running 
 In two different terminals in first run the server and in the second client. It can have multiple clients connected and using it at the same time.
-``` go run server.go ```
 
-``` go run client.go ui.go ```
+  ``` go run server.go ```
+
+  ``` go run client.go ui.go ```
