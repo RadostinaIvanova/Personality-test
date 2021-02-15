@@ -13,6 +13,7 @@ import(
 	"github.com/RadostinaIvanova/Personality-test/model"
 )
 
+
 const questionsDoc string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\questions.txt"
 const pathToDescriptions string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\PersonalityTypes4\\" 
 const corpusName  string = "D:\\FMI\\golang_workspace\\src\\golang-project\\resources\\mbt.csv"
@@ -23,8 +24,8 @@ const expanding int = 2
 
 
 
-//return trained classificator and if file with already trained model - loads it
-//if not trains one and save it to file and returns it
+//Returns trained classificator. If file with already trained classificator exists - loads it.
+//If not - trains one, saves it to file and then returns it.
 func extractClassificator(filename string, corpusName string) classificator.NBclassificator {
 	c := classificator.NBclassificator{}
 	if !exists(filename){
@@ -37,8 +38,8 @@ func extractClassificator(filename string, corpusName string) classificator.NBcl
 	return c
 }
 
-//returns trained language Markov Model and if file with already trained model - loads it
-//if not trains one and save it to file and returns it
+//Returns trained language Markov Model. If file with already trained model exists - loads it.
+//If not - trains one, saves it to file and then returns it.
 func extractModel(filename string, dialoguesFile string, limit int) model.MarkovModel{
 	m := model.MarkovModel{}
 	if !exists(filename){
@@ -55,7 +56,7 @@ func extractModel(filename string, dialoguesFile string, limit int) model.Markov
 	return m
 }
 
-//converts types from encoded ints to their real names as strings 
+//Converts types from encoded ints to their real names as strings.
 func personalityTypes(pType int) string{
 	switch pType{
 		case 0:  return "Diplomat"
@@ -66,12 +67,12 @@ func personalityTypes(pType int) string{
 	return "Analyst"
 }
 
-//returns result from classification after applying trained classificator
+//Returns result from classification after applying trained classificator.
 func classificate(answers string, c classificator.NBclassificator) string {
 	return personalityTypes(c.ApplyMultinomialNB(answers))
 }
 
-//sends questions and receives answers from client
+//Sends questions via bufio.Writer and receives answers via bufio.Reader from client.
 func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writer, m model.MarkovModel) string{
 	var answers string = ""
 	serverWriter.WriteString(strconv.Itoa(len(questions)) + "\n")
@@ -96,13 +97,13 @@ func quiz(questions []string, serverReader bufio.Reader, serverWriter bufio.Writ
 	return answers
 }
 
-//send the result from classification
+//Sends the result from classification via bufio.Writer.
 func sendType(pType string, serverReader bufio.Reader, serverWriter bufio.Writer){
 	serverWriter.WriteString(pType + "\n");
 	serverWriter.Flush();
 }
 
-//extract questions which will ask the client
+//Extract questions from file and assigns values to variable of type slice of strings. 
 func extractQuestionsFromFile(filename string) []string{
 	questions := []string{}
 	f , errf := os.Open(filename)
@@ -116,7 +117,7 @@ func extractQuestionsFromFile(filename string) []string{
 	}
 	return questions 
 }
-// Exists reports whether the named file or directory exists.
+//Exists reports whether the named file or directory exists.
 func exists(name string) bool {
     if _, err := os.Stat(name); err != nil {
         if os.IsNotExist(err) {
@@ -126,7 +127,7 @@ func exists(name string) bool {
     return true
 }
 
-//extract info which is demanded from the client
+//Extract info which is demanded from the client.
 func extractInfo(option string, path string) string{
 	filename := path + option + ".txt"
 	buff, err := ioutil.ReadFile(filename)
@@ -138,7 +139,7 @@ func extractInfo(option string, path string) string{
 	return text
 }
 
-//reveiving  which information for the personality type is wanted from the client
+//Reveiving which information for the personality type is wanted from the client.
 func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter bufio.Writer){
 	for{
 		optionReceived, err2 := serverReader.ReadString('\n')
@@ -156,6 +157,7 @@ func optionHandler(documentsPath string, serverReader bufio.Reader, serverWriter
 	}
 }
 
+//Handles connection between client and server, creates bufio.Writer and bufio.Reader.
 func handleConnection(conn net.Conn, questions []string, c classificator.NBclassificator,m model.MarkovModel){
 	//fmt.Println("Inside handle connection func")
 	defer conn.Close()

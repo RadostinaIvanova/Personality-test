@@ -10,7 +10,7 @@ import(
 	"strconv"	
 )
 
-//receives questions from server and send their answers to server
+//Receives questions via bufio.Reader and send their answers via bufio.Writer
 func answerQuiz(clientReader bufio.Reader, clientWriter bufio.Writer, app *tview.Application) {
 	received, err:= clientReader.ReadString('\n')
 	if err != nil{
@@ -29,7 +29,7 @@ func answerQuiz(clientReader bufio.Reader, clientWriter bufio.Writer, app *tview
 	}
 }
 
-//receives the result from server of the classification 
+//Receives the result from server of the classification.
 func receiveClassification(clientReader bufio.Reader, app *tview.Application){
 	classificationResult, err:= clientReader.ReadString('\n')
 	if err != nil{

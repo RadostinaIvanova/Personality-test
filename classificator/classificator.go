@@ -15,7 +15,7 @@ type NBclassificator struct{
 	PriorC []float64
 }
 
-//function trains Multionomal Naive Bayes Classificator and returns vocabulary, priorC and cond probabilty
+//Trains Multionomal Naive Bayes Classificator by assigning values to Vocabulary, PriorC and Condition probabilty
 func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	numOfAllDocs := c.calNumAllDocs(classes)
 	numOfClasses := c.calNumOfClasses(classes)
@@ -26,7 +26,9 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	c.CondProb = c.makeSliceCondProb(sliceTermCountClass)
  }
  
- //returns the class corresponding to the text given by using formula 	
+ //Returns the class corresponding to the text given by using formula result = argmax(c∈ℂ)Pr[c|t]
+ //which means that we look for the best class for the condition - given text t. Moreover 
+ //the result = arg max(c∈ℂ)logPr[c] + ∑(from k=1 to n)log Pr[tdk|c]
  func (c *NBclassificator) ApplyMultinomialNB(text string ) int{
 	terms  := c.extractTerms(text)
 	var classificatedAs int 
@@ -48,7 +50,12 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	return classificatedAs
  }
  
- //testing classifier accuracy
+//Testing classifier accuracy. Accuracy is one metric for evaluating classification models. Informally, accuracy is the fraction of predictions our model got right.
+//Precision attempts to answer the following question:  What proportion of positive identifications was actually correct?
+//Precision is defined as follows:True positives/(True positives + False positives).
+//Recall attempts to answer the following question: What proportion of actual positives was identified correctly?
+//Mathematically, recall is defined as follows: True positives/(True Positives + False Negatives).
+//The F-score is the harmonic mean of the precision and recall. 
  func (c *NBclassificator)TestClassifier(testClassCorpus map[int] []string){
 	numOfClasses := len(testClassCorpus)
 	numDocsByClass := c.numberDocByClass(testClassCorpus)
@@ -63,6 +70,7 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	fmt.Println("Обща F-score: ", fScoreOverall)
  }
 
+ //Loads trained classificator by reading (encoded) trained classificator from file, decodes it and assigns it to c
 func (c *NBclassificator) LoadClassificator(filename string){
 	f, err := os.Open(filename)
 	if err != nil{
@@ -76,6 +84,7 @@ func (c *NBclassificator) LoadClassificator(filename string){
 	}
 }
 
+//Saves trined classificator by encoding it and write it to file.
 func (c *NBclassificator) SaveClassificator(filename string){
 	f, err := os.Create(filename)
 	if err != nil{
@@ -87,7 +96,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
 }
 
 
- //returns number of all docs in all classes
+ //Returns number of all docs in all classes.
  func (c *NBclassificator) calNumAllDocs(classes map[int] []string) int{
 	numOfDocs := 0
 	for _,value := range classes{
@@ -96,22 +105,22 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return numOfDocs
  }
  
- //returns number of classes 
+ //Returns number of classes.
  func (c *NBclassificator) calNumOfClasses(classes map[int] []string) int{
 	return len(classes)
  }
  
- //returns a slice of strings by spliting a given document into terms
+ //Returns a slice of strings by spliting a given document into terms(words).
  func (c *NBclassificator) extractTerms(doc string) []string{
 	return strings.Fields(doc)
  }
  
- //returns number of documents in each class
+ //Returns number of documents for given class.
  func (c *NBclassificator) classDocsNum(classDocs []string) int{
 	return len(classDocs)
  }
  
- //returns a slice of number of documents in each class
+ //Returns a slice of number of documents for each class.
  func (c *NBclassificator) makeSliceOfNumDocsInClass(classes map[int] []string, numOfClasses int) []int{
 	arrOfNumDocs := []int{}
 	for classInd := 0; classInd < len(classes);classInd++ {
@@ -120,8 +129,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return arrOfNumDocs
  }
  
- //returns slice of probabilties of each class with the formula - 
- //count of documents in class divided by all documents in all classes
+ //Returns slice of probabilties of each class with the formula - count of documents in class divided by all documents in all classes.
  func (c *NBclassificator) makeSlicePriorC(numOfAllDocs int, sliceOfNumDocsInClass []int) []float64{
 	arr := []float64{}
  
@@ -131,8 +139,8 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return arr
  }
  
- //returns a slice which each index matches the term in vocabulary of the same index 
- // and its value is the number of counts of the term in all documents 
+ //Returns a slice which each index matches the term in vocabulary of the same index 
+ //and its value is the number of counts of the term in all documents.
  func (c *NBclassificator) makeSliceTermCountInClass(numOfClasses int) []int{
 	termCountArr := []int{}
 	for _, value := range c.Vocabulary{
@@ -148,10 +156,9 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return termCountArr
  }
  
- //the function receives as arguments a vocabulary and a slice with number of terms in each class
- //and returns map with key string and value slice of floats
- //the keys represent a term from vocabulary and the slice of floats has the values of the cond probability 
- //inside the innermost cycle is the the making of the slice which we assign to the every term of the vocabulary
+ //The function receives as arguments a vocabulary and a slice with number of terms in each class and returns map with key string and value slice of floats.
+ //The keys represent a term from vocabulary and the slice of floats has the values of the cond probability.
+ //Inside the innermost cycle is the the making of the slice which we assign to the every term of the vocabulary.
  func (c *NBclassificator) makeSliceCondProb(sliceNumOfTermClass []int) map [string] []float64{
 	sliceCondProb := make(map [string] []float64)
    
@@ -168,8 +175,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return sliceCondProb
  }
  
- //returns vocabulary of type map[string] []int where the key is a term 
- //and the slice contains for each class the term frequency
+ //Returns vocabulary of type map[string] []int where the key is a term and the slice contains for each class the term frequency.
  func (c *NBclassificator) makeVocabulary(classes map[int] []string, numOfClasses int) map [string] []int{
 	vocabulary := make(map [string] []int)
  
@@ -190,8 +196,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
  }
  
  
- //returns the confusion matrix which shows classification
- // accuracy by showing the correct and incorrect predictions on each class.
+ //Returns the confusion matrix which shows classification accuracy by showing the correct and incorrect predictions on each class.
  func (c *NBclassificator) makeConfMatrix(testClassCorpus map[int] []string,
 					numOfClasses int) [][]int{
 	 confusionMatrix := make([][]int, numOfClasses)
@@ -207,11 +212,10 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	 for _, value := range confusionMatrix{
 		 fmt.Println(value)
 	 }
-	 //fmt.Println(confusionMatrix)
 	return confusionMatrix
  }
  
- //returns sum of the elements of the matrix by given column(classInd)
+ //Returns sum of the elements of the matrix by given column(classInd).
  func (c *NBclassificator) sumMatrixValues(confussionMatrix [][]int, classInd int, numOfClasses int) int{
 	var sum int
 		for i := 0; i < numOfClasses; i++ { 
@@ -220,7 +224,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return sum
  }
  
- //sum the values of slice of ints 
+ //Sums the values of slice of ints 
  func (c *NBclassificator) sum(sl []int) int {  
 	result := 0  
 	for _, numb := range sl {  
@@ -237,7 +241,12 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return docsCountByClass
  }
  
- //returns the Precision, F-score and the recall of the classificator for each document of a test set of documents
+//Returns the Precision, F-score and the Recall of the classificator for each document of a test set of documents
+//Precision attempts to answer the following question:  What proportion of positive identifications was actually correct?
+//Precision is defined as follows:True positives/(True positives + False positives).
+//Recall attempts to answer the following question: What proportion of actual positives was identified correctly?
+//Mathematically, recall is defined as follows: True positives/(True Positives + False Negatives).
+//The F-score is the harmonic mean of the precision and recall. 
  func (c *NBclassificator) calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){ 
 
 	precision := []float64{}
@@ -259,7 +268,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return precision, recall, fScore
  }
  
- //returns overall Precision, Recall and F-score for every class 
+ //Returns overall Precision, Recall and F-score for every class.
  func (c *NBclassificator) calcOverall(precision []float64,recall  []float64, fScore []float64, 
 				 numOfClasses int , countDocsClass[] int) (float64, float64, float64){
  
