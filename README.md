@@ -2,7 +2,7 @@
 Personality test which classifies in four personality types. For the classification is used the natural language processing classification algorithm - Multinomial Naive-Bayes.
 The Markov model is used as language model to expand a sentence with its context words for more precision and greater results. 
 
-###What does it do?
+### What does it do?
 Server asks questions, a person answers them and by the the given answers a trained Naive Bayes classificator classificates the person. To be specific The markov model gives for every answer context, concatenates it to the answer to expand the text for classification.
 
 ### Multinomial Naive Bayes
