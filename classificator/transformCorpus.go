@@ -9,6 +9,9 @@ import(
 	"log"
 )
 
+//Extracts text from file, put them into map with keys index of Class and values - documents of this class.
+//Each document is of type string and multiples documents of class x are represented as []string.
+//Divides classes set into train and test set. 
 func MakeClassesFromFile(filename string) (map[int][] string,map [int][]string){
 	all := readCsvFile(filename)	
 	classes := divideIntoClasses(all)

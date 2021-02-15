@@ -25,12 +25,15 @@ type Kgram struct{
     WordCount map[string] int
 }
 
+//Contains contexts as keys of type string and number occurences as value.
 type Tc map[string] int
 
+//Contains words as key of type string and their probability
 type probWord struct{
 	word string
 	value float64
 }
+
 
 //Initializes a MarkovModel object by extracting grams of type <= K from given train set of sentences where 
 //every sentence is implemented as slice of strings.
@@ -45,7 +48,7 @@ func (m* MarkovModel) Init(k int, train [][]string,limit int){
     m.calculateTc()
 }
 
-//Saves trined model by encoding it and write it to file
+//Saves trined model by encoding it and write it to file.
 func (m *MarkovModel) SaveModel(filename string){
 	f, err := os.Create(filename)
 	if err != nil{
@@ -59,7 +62,7 @@ func (m *MarkovModel) SaveModel(filename string){
 	}
 }
 
-//Loads trained model by reading (encoded) trained model from file, decodes it and assigns it to m
+//Loads trained model by reading (encoded) trained model from file, decodes it and assigns it to m.
 func (m *MarkovModel) LoadModel(filename string){
 	f, err := os.Open(filename)
 	if err != nil{
@@ -103,7 +106,7 @@ func (mm *MarkovModel) BestContinuation(sentence []string, alpha float64, l int)
 }
 
 //Extracts monograms from corpus by making dictionary of unique word and their count 
-//and then copy dictionary to type Kgram with context - empty string
+//and then copy dictionary to type Kgram with context - empty string.
 func (mm *MarkovModel) extractMonograms(corpus [][]string,  limit int){
     dictionary := make(map [string] int)
     for _, sent := range(corpus){
@@ -161,7 +164,7 @@ func (mm *MarkovModel) probMLE(word string ,con string) float64{
 }
 
 
-//Method of estimating the parameters of a probability distribution by maximizing a likelihood function, 
+//returning probability distribution by maximizing a likelihood function, 
 //so that under the assumed statistical model the observed data is most probable.
 func (mm *MarkovModel) prob(word string, context[] string, alpha float64) float64{
 	con := strings.Join(context, " ")
@@ -186,9 +189,8 @@ func (mm *MarkovModel) sentenceLogProbability(sentence []string, alpha float64) 
     return sum
 }
 
-//Return the perplexity which  is a measurement of how well a probability distribution or
-// probability model predicts a sample.
-func (mm *MarkovModel) perplexity(corpus [][]string, alpha float64)float64{
+//Return the the measurement of how well probability model predicts a sample.
+func (mm *MarkovModel) Perplexity(corpus [][]string, alpha float64)float64{
     sum := 0
     for _, sentence := range(corpus){
         sum += (len(sentence)-1)
@@ -245,7 +247,7 @@ func (mm *MarkovModel) existContext(context string) int{
     return -1
 }
 
-//Counts context occurences by summing for every Kgram with given context all its map values from Kgram.WordCount
+//Counts context occurences by summing for every Kgram with given context all its map values from Kgram.WordCount.
 func (mm *MarkovModel) countContext(context string)[]string{
 	candidates := []string{}
 	if ind := mm.existContext(context); ind > -1{

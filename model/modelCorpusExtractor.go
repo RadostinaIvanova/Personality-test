@@ -9,6 +9,7 @@ import (
     "log"
 )
 
+//Returns each sentence as follows: every word is a string so every sentence is a string of strings.
 func FullSentCorpus(sentences []string) [][]string {
 	sentences = transform(sentences)
     result := [][]string{}
@@ -25,6 +26,7 @@ func FullSentCorpus(sentences []string) [][]string {
     return result
 }
 
+//Extracts file and erase all symbols that are not from a-z, A-Z, 0-9 or space symbol
 func Extract(filename string) []string{
     f, err := os.Open(filename)
     if err != nil{
@@ -68,6 +70,7 @@ func delete_empty (s []string) []string {
     return r
 }
 
+//Divides fullSentenceCorpus into test,train. Test set length is the given percent of fullSentenceCorpus and all left are assign to train set.
 func DivideIntoTrainAndTest(percent float64, fullSentCorpus [][]string)([][]string,[][]string){
 	portion := int(percent*float64(len(fullSentCorpus)))
 	test := fullSentCorpus[:portion]

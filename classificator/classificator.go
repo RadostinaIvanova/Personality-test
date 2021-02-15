@@ -15,7 +15,7 @@ type NBclassificator struct{
 	PriorC []float64
 }
 
-//Trains Multionomal Naive Bayes Classificator by assigning values to Vocabulary, PriorC and Condition probabilty
+//Trains classficiator by assigning values to Vocabulary, PriorC and Condition probabilty.
 func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	numOfAllDocs := c.calNumAllDocs(classes)
 	numOfClasses := c.calNumOfClasses(classes)
@@ -26,9 +26,7 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	c.CondProb = c.makeSliceCondProb(sliceTermCountClass)
  }
  
- //Returns the class corresponding to the text given by using formula result = argmax(c∈ℂ)Pr[c|t]
- //which means that we look for the best class for the condition - given text t. Moreover 
- //the result = arg max(c∈ℂ)logPr[c] + ∑(from k=1 to n)log Pr[tdk|c]
+ //Returns the class corresponding to the text given after classificator applied.
  func (c *NBclassificator) ApplyMultinomialNB(text string ) int{
 	terms  := c.extractTerms(text)
 	var classificatedAs int 
@@ -50,12 +48,7 @@ func (c *NBclassificator) TrainMultinomialNB(classes map[int] []string){
 	return classificatedAs
  }
  
-//Testing classifier accuracy. Accuracy is one metric for evaluating classification models. Informally, accuracy is the fraction of predictions our model got right.
-//Precision attempts to answer the following question:  What proportion of positive identifications was actually correct?
-//Precision is defined as follows:True positives/(True positives + False positives).
-//Recall attempts to answer the following question: What proportion of actual positives was identified correctly?
-//Mathematically, recall is defined as follows: True positives/(True Positives + False Negatives).
-//The F-score is the harmonic mean of the precision and recall. 
+//Testing classifier by printing calculated overall precision, recall and F-score.
  func (c *NBclassificator)TestClassifier(testClassCorpus map[int] []string){
 	numOfClasses := len(testClassCorpus)
 	numDocsByClass := c.numberDocByClass(testClassCorpus)
@@ -84,7 +77,7 @@ func (c *NBclassificator) LoadClassificator(filename string){
 	}
 }
 
-//Saves trined classificator by encoding it and write it to file.
+//Saves trained classificator by encoding it and write it to file.
 func (c *NBclassificator) SaveClassificator(filename string){
 	f, err := os.Create(filename)
 	if err != nil{
@@ -241,13 +234,11 @@ func (c *NBclassificator) SaveClassificator(filename string){
 	return docsCountByClass
  }
  
-//Returns the Precision, F-score and the Recall of the classificator for each document of a test set of documents
-//Precision attempts to answer the following question:  What proportion of positive identifications was actually correct?
+//Returns the Precision, F-score and the Recall of the classificator for each document of a test set of documents.
 //Precision is defined as follows:True positives/(True positives + False positives).
-//Recall attempts to answer the following question: What proportion of actual positives was identified correctly?
-//Mathematically, recall is defined as follows: True positives/(True Positives + False Negatives).
+//Recall is defined as follows: True positives/(True Positives + False Negatives).
 //The F-score is the harmonic mean of the precision and recall. 
- func (c *NBclassificator) calcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){ 
+ func (c *NBclassificator) CalcPRF(confusionMatrix [][]int, numOfClasses int, numAllDocsByClass []int) ([]float64, []float64,[] float64){ 
 
 	precision := []float64{}
 	recall := []float64{}
@@ -269,7 +260,7 @@ func (c *NBclassificator) SaveClassificator(filename string){
  }
  
  //Returns overall Precision, Recall and F-score for every class.
- func (c *NBclassificator) calcOverall(precision []float64,recall  []float64, fScore []float64, 
+ func (c *NBclassificator) CalcOverall(precision []float64,recall  []float64, fScore []float64, 
 				 numOfClasses int , countDocsClass[] int) (float64, float64, float64){
  
 	var precisionOverall float64 = 0.0
